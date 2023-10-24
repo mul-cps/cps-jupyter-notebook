@@ -4,9 +4,9 @@ RUN pip install --upgrade "jupyterlab<4" jupyterlab-git \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
 USER root
-RUN sudo apt-get update && DEBIAN_FRONTEND=noninteractive sudo apt-get install \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install \
     gh \
-    && sudo rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 USER jovyan
 ENV GIT_SSL_NO_VERIFY="false"
