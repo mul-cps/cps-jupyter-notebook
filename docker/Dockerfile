@@ -18,3 +18,4 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install \
 USER jovyan
 ENV GIT_SSL_NO_VERIFY="false"
 WORKDIR /home/jovyan/work
+COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
