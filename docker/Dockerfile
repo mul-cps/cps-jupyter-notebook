@@ -3,7 +3,7 @@
 
 from quay.io/jupyter/datascience-notebook:lab-4.2.1 as base
 
-RUN pip install --upgrade "jupyterlab<4" jupyterlab-git \
+RUN pip install --upgrade jupyterlab-git \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
