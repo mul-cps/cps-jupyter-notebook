@@ -6,7 +6,7 @@ from quay.io/jupyter/datascience-notebook:lab-4.2.1 as base
 RUN pip install --upgrade jupyterlab-git \
     jupyterlab-lsp \
     'python-lsp-server[all]' && \
-    R -e 'install.packages("languageserver")' && \
+    # R -e 'install.packages("languageserver")' && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
