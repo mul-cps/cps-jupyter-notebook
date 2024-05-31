@@ -14,3 +14,4 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install \
 
 USER jovyan
 ENV GIT_SSL_NO_VERIFY="false"
+WORKDIR /home/jovyan/work
