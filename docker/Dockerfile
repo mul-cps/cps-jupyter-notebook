@@ -1,5 +1,5 @@
 #from jupyter/minimal-notebook:lab-3.6.3 as base
-from datascience-notebook:lab-3.6.3 as base
+from jupyter/datascience-notebook:lab-3.6.3 as base
 RUN pip install --upgrade "jupyterlab<4" jupyterlab-git \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
