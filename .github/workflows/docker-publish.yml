@@ -23,8 +23,8 @@ env:
 
 
 jobs:
+  
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -88,6 +88,11 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+      - name: Check install!
+        run: cosign version
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
