@@ -4,8 +4,8 @@
 from quay.io/jupyter/datascience-notebook:lab-4.2.1 as base
 
 RUN pip install --upgrade jupyterlab-git \
-    jupyterlab-lsp \
-    'python-lsp-server[all]' \ 
+    #jupyterlab-lsp \
+    #'python-lsp-server[all]' \ 
     nbgitpuller \
     git-credential-helpers && \
     # R -e 'install.packages("languageserver")' && \
