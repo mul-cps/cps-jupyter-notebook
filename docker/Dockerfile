@@ -25,6 +25,9 @@ ENV password=jovyan
 # RUN adduser --gecos "" --disabled-password $username
 RUN echo "${username}:${password}" | chpasswd
 
+# enable passwordless sudo
+RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
 WORKDIR /home/jovyan/work
