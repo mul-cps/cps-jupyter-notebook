@@ -22,7 +22,7 @@ RUN usermod -aG sudo jovyan
 ENV username=jovyan
 ENV password=jovyan
 
-RUN adduser --gecos "" --disabled-password $username
+# RUN adduser --gecos "" --disabled-password $username
 RUN echo "${username}:${password}" | chpasswd
 
 USER jovyan
