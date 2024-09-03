@@ -19,6 +19,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install \
 
 RUN usermod -aG sudo jovyan
 
+ENV username=jovyan
+ENV password=jovyan
+
+RUN adduser --gecos "" --disabled-password $username
+RUN echo "${username}:${password}" | chpasswd
+
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
 WORKDIR /home/jovyan/work
