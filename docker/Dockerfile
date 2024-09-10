@@ -8,6 +8,8 @@ RUN pip install --upgrade jupyterlab-git \
     'python-lsp-server[all]' \ 
     nbgitpuller \
     jupyter-resource-usage \
+    catppuccin-jupyterlab \
+    dask-labextension \
     git-credential-helpers && \
     # R -e 'install.packages("languageserver")' && \
     npm cache clean --force && \
