@@ -14,17 +14,17 @@ RUN pip install --upgrade jupyterlab-git \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
 # install all language servers (additional npm required ones)
-RUN jlpm add --dev  \
-    bash-language-server \
-    dockerfile-language-server-nodejs \
-    pyright \
-    sql-language-server \
-    typescript-language-server \
-    unified-language-server \
-    vscode-css-languageserver-bin \
-    vscode-html-languageserver-bin \
-    vscode-json-languageserver-bin \
-    yaml-language-server
+# RUN jlpm add --dev  \
+#     bash-language-server \
+#     dockerfile-language-server-nodejs \
+#     pyright \
+#     sql-language-server \
+#     typescript-language-server \
+#     unified-language-server \
+#     vscode-css-languageserver-bin \
+#     vscode-html-languageserver-bin \
+#     vscode-json-languageserver-bin \
+#     yaml-language-server
 
 # nvidia dashboard extension
 RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
