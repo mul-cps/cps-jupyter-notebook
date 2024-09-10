@@ -32,7 +32,7 @@ RUN pip install --upgrade jupyterlab-git \
 RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
 USER root
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     gh \
     nodejs \
     && rm -rf /var/lib/apt/lists/*
