@@ -32,6 +32,7 @@ RUN pip install --upgrade jupyterlab-git \
 RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
 # enable selection of environments that are installed later
+# from https://discourse.jupyter.org/t/multiple-conda-environments/22530/2
 conda install -n base nb_conda_kernels
 
 USER root
