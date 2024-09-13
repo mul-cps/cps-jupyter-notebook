@@ -31,6 +31,9 @@ RUN pip install --upgrade jupyterlab-git \
 # nvidia dashboard extension
 RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
+# enable selection of environments that are installed later
+conda install -n base nb_conda_kernels
+
 USER root
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     gh \
