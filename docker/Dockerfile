@@ -33,12 +33,13 @@ RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
 # enable selection of environments that are installed later
 # from https://discourse.jupyter.org/t/multiple-conda-environments/22530/2
-RUN conda install -n base nb_conda_kernels
+#RUN conda install -n base nb_conda_kernels
 
 USER root
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     gh \
     nodejs \
+    btop \
     && rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo jovyan
