@@ -9,6 +9,7 @@ RUN pip install --upgrade jupyterlab-git \
     nbgitpuller \
     jupyter-resource-usage \
     catppuccin-jupyterlab \
+    jupyterlab-horizon-theme \
     dask-labextension \
     git-credential-helpers && \
     # R -e 'install.packages("languageserver")' && \
