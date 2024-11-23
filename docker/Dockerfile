@@ -1,19 +1,20 @@
 from quay.io/jupyter/datascience-notebook:lab-4.2.1 as base
 
-RUN pip install --upgrade jupyterlab-git \
+RUN pip install --upgrade \
+    jupyterlab-git \
     jupyterlab-lsp \
     'python-lsp-server[all]' \ 
     nbgitpuller \
     jupyter-resource-usage \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
-    dask-labextension \
+    #dask-labextension \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
 # nvidia dashboard extension
-RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
+#RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
 # enable selection of environments that are installed later
 # from https://discourse.jupyter.org/t/multiple-conda-environments/22530/2
