@@ -9,6 +9,7 @@ RUN pip install --upgrade \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
     #dask-labextension \
+    jupyter-sshd-proxy \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
@@ -25,6 +26,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     gh \
     nodejs \
     btop \
+    openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo jovyan
