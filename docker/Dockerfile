@@ -11,6 +11,7 @@ RUN pip install --upgrade \
     #dask-labextension \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
+    git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
@@ -28,6 +29,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     nodejs \
     btop \
     openssh-server \
+    && curl -fsSL https://code-server.dev/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo jovyan
