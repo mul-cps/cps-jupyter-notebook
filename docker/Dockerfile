@@ -12,6 +12,7 @@ RUN pip install --upgrade \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
     git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
+    jupyter-glances-proxy \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
