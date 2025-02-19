@@ -11,7 +11,8 @@ RUN pip install --upgrade \
     #dask-labextension \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
-    git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
+    #git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
+    jupyter-code-server \
     jupyter-glances-proxy \
     git-credential-helpers && \
     npm cache clean --force && \
