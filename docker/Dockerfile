@@ -12,7 +12,8 @@ RUN pip install --upgrade \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
     #git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
-    jupyter-code-server \
+    #jupyter-code-server \
+    git+https://github.com/bjoernellens1/jupyter-code-server \
     jupyter-glances-proxy \
     git-credential-helpers && \
     npm cache clean --force && \
