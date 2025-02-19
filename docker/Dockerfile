@@ -30,8 +30,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     btop \
     openssh-server \
     && curl -fsSL https://code-server.dev/install.sh | sh \
-    && jupyter labextension install @jupyterlab/server-proxy \
-    && jupyter serverextension enable --sys-prefix jupyter_server_proxy \
     && rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo jovyan
