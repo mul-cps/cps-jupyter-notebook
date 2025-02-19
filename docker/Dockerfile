@@ -10,6 +10,7 @@ RUN pip install --upgrade \
     jupyterlab-horizon-theme \
     #dask-labextension \
     jupyter-sshd-proxy \
+    jupyter-server-proxy \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
