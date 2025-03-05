@@ -38,13 +38,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 RUN usermod -aG sudo jovyan
 
 ENV username=jovyan
-ENV password=jovyan
+# ENV password=jovyan
 
 # RUN adduser --gecos "" --disabled-password $username
-RUN echo "${username}:${password}" | chpasswd
+# from: https://docs.docker.com/build/ci/github-actions/secrets/#secret-mounts
+RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD echo "${username}:${ROOT_PASSWORD}" | chpasswd
 
 # enable passwordless sudo
-RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+# RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
