@@ -9,12 +9,12 @@ RUN pip install --upgrade \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
     #dask-labextension \
-    jupyter-sshd-proxy \
-    jupyter-server-proxy \
+    # jupyter-sshd-proxy \
+    # jupyter-server-proxy \
     #git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
     #jupyter-code-server \
-    git+https://github.com/bjoernellens1/jupyter-code-server \
-    jupyter-glances-proxy \
+    # git+https://github.com/bjoernellens1/jupyter-code-server \
+    # jupyter-glances-proxy \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
@@ -35,16 +35,16 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && curl -fsSL https://code-server.dev/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*
 
-RUN usermod -aG sudo jovyan
+# RUN usermod -aG sudo jovyan
 
 ENV username=jovyan
 ENV password=jovyan
 
 # RUN adduser --gecos "" --disabled-password $username
-RUN echo "${username}:${password}" | chpasswd
+# RUN echo "${username}:${password}" | chpasswd
 
 # enable passwordless sudo
-RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+# RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
