@@ -39,6 +39,19 @@ Both variants include:
 - Glances system monitoring
 - Additional tools: gh (GitHub CLI), btop, nodejs
 
+### User Accounts
+
+- **`jovyan`**: Default JupyterLab user (UID 1000)
+  - Primary user for running notebooks
+  - Password can be set via `CPS_ROOT_PASSWORD` secret
+  - No sudo access
+
+- **`cpsadmin`**: Administrative user
+  - Member of sudo group
+  - Password set via `CPS_ADMIN_PASSWORD` secret
+  - Use this account for system administration tasks
+  - Switch to this user: `su - cpsadmin` (requires password)
+
 ## Building Locally
 
 ### CPU-only variant
@@ -71,6 +84,12 @@ The GitHub Actions workflow uses a matrix strategy to build both variants in par
 - Automatic tagging based on branch, PR, semver, and SHA
 - Image signing with cosign for security
 - Only CUDA variant built for amd64 (GPU support requirement)
+
+### Required Secrets
+
+Set these secrets in your GitHub repository:
+- `CPS_ROOT_PASSWORD`: Password for the `jovyan` user (optional)
+- `CPS_ADMIN_PASSWORD`: Password for the `cpsadmin` sudo user (required for admin access)
 
 ## Requirements
 

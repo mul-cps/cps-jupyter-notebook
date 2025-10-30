@@ -123,6 +123,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.variant.name }}
           secrets: |
             root_password=${{ secrets.CPS_ROOT_PASSWORD }}
+            admin_password=${{ secrets.CPS_ADMIN_PASSWORD }}
           build-args: |
             BASE_IMAGE=${{ matrix.variant.base_image }}
           

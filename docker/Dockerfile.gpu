@@ -32,20 +32,29 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     nodejs \
     btop \
     openssh-server \
+    sudo \
     && curl -fsSL https://code-server.dev/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*
 
-RUN usermod -aG sudo jovyan
+# Create cpsadmin user with sudo privileges
+# Password will be set from secret
+RUN useradd -m -s /bin/bash -G sudo cpsadmin
 
-ENV username=jovyan
-# ENV password=jovyan
-
-# RUN adduser --gecos "" --disabled-password $username
+# Set password for cpsadmin from secret
 # from: https://docs.docker.com/build/ci/github-actions/secrets/#secret-mounts
-RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD echo "${username}:${ROOT_PASSWORD}" | chpasswd
+RUN --mount=type=secret,id=admin_password,env=ADMIN_PASSWORD \
+    if [ -n "$ADMIN_PASSWORD" ]; then \
+        echo "cpsadmin:${ADMIN_PASSWORD}" | chpasswd; \
+    else \
+        echo "Warning: ADMIN_PASSWORD not set, using default"; \
+        echo "cpsadmin:changeme" | chpasswd; \
+    fi
 
-# enable passwordless sudo
-# RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+# Set password for jovyan user if needed
+RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD \
+    if [ -n "$ROOT_PASSWORD" ]; then \
+        echo "jovyan:${ROOT_PASSWORD}" | chpasswd; \
+    fi
 
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
