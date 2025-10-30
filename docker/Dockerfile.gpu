@@ -1,5 +1,20 @@
 FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim as base
 
+# Install system packages first (including nodejs for npm)
+USER root
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    gh \
+    nodejs \
+    npm \
+    btop \
+    openssh-server \
+    sudo \
+    && curl -fsSL https://code-server.dev/install.sh | sh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to jovyan to install pip packages
+USER jovyan
+
 RUN pip install --upgrade \
     jupyterlab-git \
     # jupyterlab-lsp \
@@ -27,14 +42,6 @@ RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 #RUN conda install -n base nb_conda_kernels
 
 USER root
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    gh \
-    nodejs \
-    btop \
-    openssh-server \
-    sudo \
-    && curl -fsSL https://code-server.dev/install.sh | sh \
-    && rm -rf /var/lib/apt/lists/*
 
 # Create cpsadmin user with sudo privileges
 # Password will be set from secret
