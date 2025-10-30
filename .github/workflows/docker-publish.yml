@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Multi-Variant Build
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -33,6 +33,21 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - name: cpu
+            dockerfile: Dockerfile.cpu
+            suffix: cpu
+            platforms: linux/amd64,linux/arm64
+            base_image: quay.io/jupyter/datascience-notebook:lab-4.2.1
+          - name: cuda
+            dockerfile: Dockerfile.gpu
+            suffix: cuda-12.6
+            platforms: linux/amd64
+            base_image: cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,6 +59,10 @@ jobs:
         uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
         with:
           cosign-release: 'v2.1.1'
+
+      # Set up QEMU for multi-platform builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -76,24 +95,40 @@ jobs:
         uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
+            suffix=-${{ matrix.variant.suffix }},onlatest=true
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
+      - name: Build and push Docker image (${{ matrix.variant.name }})
         id: build-and-push
         uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
         with:
           context: ./docker
+          file: ./docker/${{ matrix.variant.dockerfile }}
+          platforms: ${{ matrix.variant.platforms }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.variant.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant.name }}
           secrets: |
             "root_password=${{ secrets.CPS_ROOT_PASSWORD }}"
+          build-args: |
+            BASE_IMAGE=${{ matrix.variant.base_image }}
           
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.8.1
+        
       - name: Check install!
         run: cosign version
 
@@ -102,7 +137,7 @@ jobs:
       # repository is public to avoid leaking data.  If you would like to publish
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
+      - name: Sign the published Docker image (${{ matrix.variant.name }})
         if: ${{ github.event_name != 'pull_request' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
