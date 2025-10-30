@@ -104,7 +104,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
 
       # Build and push Docker image with Buildx (don't push on PR)
@@ -122,7 +122,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.variant.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.variant.name }}
           secrets: |
-            "root_password=${{ secrets.CPS_ROOT_PASSWORD }}"
+            root_password=${{ secrets.CPS_ROOT_PASSWORD }}
           build-args: |
             BASE_IMAGE=${{ matrix.variant.base_image }}
           
