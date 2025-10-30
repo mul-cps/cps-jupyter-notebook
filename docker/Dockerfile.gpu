@@ -17,13 +17,13 @@ USER jovyan
 
 RUN pip install --upgrade \
     jupyterlab-git \
-    # jupyterlab-lsp \
-    # 'python-lsp-server[all]' \ 
+    jupyterlab-lsp \
+    'python-lsp-server[all]' \ 
     nbgitpuller \
     jupyter-resource-usage \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
-    #dask-labextension \
+    dask-labextension \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
     #git+https://gitlab.com/idris-cnrs/jupyter/jupyter-proxy-apps/jupyter-code-server-proxy.git \
