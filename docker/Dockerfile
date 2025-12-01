@@ -22,6 +22,12 @@ RUN pip install --upgrade \
 # nvidia dashboard extension
 #RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
+RUN mamba install --channel conda-forge pygraphviz -y && \
+    pip install erdantic pandas pympler pydantic && \
+    mamba clean --all -f -y && \
+    fix-permissions "${CONDA_DIR}" && \
+    fix-permissions "/home/${NB_USER}"
+
 # enable selection of environments that are installed later
 # from https://discourse.jupyter.org/t/multiple-conda-environments/22530/2
 #RUN conda install -n base nb_conda_kernels
