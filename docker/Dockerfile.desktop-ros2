@@ -51,11 +51,22 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# VS Code desktop app
-RUN wget -qO /tmp/code.deb https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64 && \
-    apt-get update && apt-get install -y /tmp/code.deb && \
-    rm -f /tmp/code.deb && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# VS Code (full GUI) – robust apt-based install
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        gpg \
+        apt-transport-https \
+        software-properties-common && \
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | \
+        gpg --dearmor > /usr/share/keyrings/microsoft.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+        > /etc/apt/sources.list.d/vscode.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        code \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 
 # ---------- ROS 2 Jazzy desktop + extras ----------
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
