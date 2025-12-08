@@ -1,44 +1,36 @@
-# syntax=docker/dockerfile:1.7
-
 FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
 
-LABEL maintainer="CPS Lab <cps@unileoben.ac.at>" \
-      org.opencontainers.image.source="https://github.com/mul-cps/cps-jupyter-notebook" \
-      org.opencontainers.image.description="CPS Jupyter Notebook - TensorFlow + CUDA + VS Code (code-server) + CPS addons"
-
-ARG NB_USER=jovyan
-ARG NB_UID=1000
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
 
-# ---------- System tools & extras ----------
+# Basic tooling + code-server + sudo
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      git \
-      curl \
-      ca-certificates \
-      build-essential \
-      cmake \
-      ninja-build \
-      pkg-config \
-      libopenblas-dev \
-      libomp-dev \
-      htop \
-      tmux \
-      openssh-client \
-      gh \
-      nodejs \
-      btop \
-      openssh-server \
-    && curl -fsSL https://code-server.dev/install.sh | sh \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+        git \
+        curl \
+        ca-certificates \
+        build-essential \
+        cmake \
+        ninja-build \
+        pkg-config \
+        libopenblas-dev \
+        libomp-dev \
+        htop \
+        tmux \
+        openssh-client \
+        gh \
+        nodejs \
+        btop \
+        openssh-server \
+        sudo && \
+    curl -fsSL https://code-server.dev/install.sh | sh && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ---------- Python & Jupyter extensions ----------
+# Give NB_USER sudo (needed for some workflows)
+RUN usermod -aG sudo "${NB_USER}"
+
+# Jupyter + UI + code-server integration (PyPI index intact!)
 RUN pip install --no-cache-dir --upgrade \
       jupyterlab-git \
       nbgitpuller \
@@ -51,46 +43,34 @@ RUN pip install --no-cache-dir --upgrade \
       jupyter-glances-proxy \
       git-credential-helpers \
       jupyterlab-nvdashboard \
-      # TF stack
-      "tensorflow[and-cuda]==2.17.*" \
-      tensorflow-datasets \
-      tensorflow-addons \
-      keras \
-      tf-keras \
-      scikit-learn \
-      pandas \
-      seaborn \
-      matplotlib \
       ipywidgets \
       jupyterlab-code-formatter \
       black \
       isort \
       ruff \
       jupyterlab-lsp \
-      "python-lsp-server[all]" \
-    && npm cache clean --force \
-    && rm -rf $CONDA_DIR/share/jupyter/lab/staging || true
+      "python-lsp-server[all]" && \
+    npm cache clean --force && \
+    rm -rf /opt/conda/share/jupyter/lab/staging
 
+# TensorFlow GPU stack (no addons – they break on cp312)
+RUN pip install --no-cache-dir --upgrade \
+      "tensorflow[and-cuda]==2.17.*" \
+      tensorflow-datasets \
+      keras \
+      tf-keras \
+      scikit-learn \
+      pandas \
+      seaborn \
+      matplotlib
+
+# Enable server extensions (don’t fail build if they’re a bit picky)
 RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
     jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
 
-RUN usermod -aG sudo ${NB_USER}
-
-RUN --mount=type=secret,id=root_password \
-    if [ -f /run/secrets/root_password ] && [ -s /run/secrets/root_password ]; then \
-      echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd ; \
-    else \
-      echo "INFO: /run/secrets/root_password missing or empty, skipping password change"; \
-    fi
-
+# Optional IPython config (copied to root; adjust if you want it for NB_USER)
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
-ENV JUPYTER_ENABLE_LAB=yes \
-    CODE_SERVER_ARGS="--auth none --disable-telemetry" \
-    JUPYTERHUB_SINGLEUSER_APP="jupyter_server.serverapp.ServerApp"
-
 USER ${NB_USER}
-WORKDIR /home/${NB_USER}
-
-CMD ["start-notebook.sh"]
+WORKDIR /home/${NB_USER}/work
