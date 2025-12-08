@@ -1,0 +1,132 @@
+# docker/Dockerfile.desktop-ros2
+FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+
+LABEL maintainer="CPS Lab <cps@unileoben.ac.at>" \
+      org.opencontainers.image.source="https://github.com/mul-cps/cps-jupyter-notebook" \
+      org.opencontainers.image.description="CPS Jupyter Notebook - Remote Desktop (XFCE) + ROS 2 Jazzy + VS Code + Tailscale + CUDA"
+
+USER root
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# --- Desktop + VNC stack as recommended by jupyter-remote-desktop-proxy ---
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      dbus-x11 \
+      xfce4 \
+      xfce4-panel \
+      xfce4-session \
+      xfce4-settings \
+      xorg \
+      xubuntu-icon-theme \
+      tigervnc-standalone-server \
+      # extra utilities
+      xfce4-terminal \
+      novnc websockify \
+      supervisor \
+      pulseaudio \
+      # dev tools
+      git curl wget ca-certificates \
+      build-essential cmake ninja-build \
+      pkg-config \
+      htop tmux \
+      # ROS2 build helpers
+      python3-vcstool \
+      python3-colcon-common-extensions \
+      && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# --- VS Code GUI (desktop app) ---
+RUN wget -qO /tmp/code.deb https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64 && \
+    apt-get update && \
+    apt-get install -y /tmp/code.deb && \
+    rm -f /tmp/code.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# --- ROS 2 Jazzy (desktop flavor) ---
+# See ROS docs for jazzy setup on Ubuntu 24.04 :contentReference[oaicite:2]{index=2}
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository universe && \
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+      -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+      > /etc/apt/sources.list.d/ros2.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      ros-jazzy-desktop \
+      ros-jazzy-navigation2 \
+      ros-jazzy-nav2-bringup \
+      ros-jazzy-rmw-cyclonedds-cpp \
+      ros-jazzy-perception \
+      ros-dev-tools \
+      && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ROS environment
+ENV ROS_DISTRO=jazzy \
+    ROS_ROOT=/opt/ros/jazzy \
+    ROS_PYTHON_VERSION=3
+
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /etc/bash.bashrc
+
+# --- Tailscale (userspace mode use) ---
+RUN curl -fsSL https://tailscale.com/install.sh | sh
+
+# You will start tailscaled in userspace from within the container if needed:
+#   tailscaled --tun=userspace-networking --socks5-server=localhost:1055 ...
+# and then `tailscale up ...` controlled via env variables / secrets.
+ENV TAILSCALE_STATE_DIR=/var/lib/tailscale
+
+# --- Proxy integrations: remote desktop + code-server ---
+RUN pip install --no-cache-dir \
+      jupyter-remote-desktop-proxy \
+      jupyter-server-proxy \
+      jupyter-code-server \
+      code-server
+
+RUN jupyter server extension enable --sys-prefix jupyter_server_proxy && \
+    jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy && \
+    jupyter server extension enable --sys-prefix jupyter_code_server || true
+
+# JupyterLab front-end extensions (best-effort)
+RUN jupyter labextension install jupyter-remote-desktop-proxy --no-build || true && \
+    jupyter labextension install jupyter-code-server --no-build || true && \
+    jupyter lab build --dev-build=False --minimize=False
+
+# --- Python ML / robotics extras ---
+RUN pip install --no-cache-dir \
+      "torch==2.4.*" \
+      "torchvision==0.19.*" \
+      "torchaudio==2.4.*" \
+      --index-url https://download.pytorch.org/whl/cu124 && \
+    pip install --no-cache-dir \
+      transformers \
+      datasets \
+      accelerate \
+      lightning \
+      timm \
+      opencv-python-headless \
+      scikit-image \
+      scikit-learn \
+      pandas \
+      matplotlib \
+      seaborn \
+      ipywidgets \
+      jupyterlab-lsp python-lsp-server[all] \
+      black isort ruff \
+      rosdep \
+      colcon-common-extensions
+
+# Remote desktop proxy tuning
+ENV JUPYTER_REMOTE_DESKTOP_PROXY_TITLE="Desktop (XFCE + VS Code + ROS2 Jazzy)" \
+    JUPYTER_REMOTE_DESKTOP_PROXY_VNC_COMMAND="vncserver -geometry 1920x1080 -SecurityTypes None" \
+    JUPYTER_ENABLE_LAB=yes \
+    CODE_SERVER_ARGS="--auth none --disable-telemetry"
+
+# Make sure ROS env is available for jovyan
+USER jovyan
+WORKDIR /home/jovyan
+RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+
+CMD ["start-notebook.sh"]

@@ -1,0 +1,74 @@
+# docker/Dockerfile.pytorch-code
+FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+
+LABEL maintainer="CPS Lab <cps@unileoben.ac.at>" \
+      org.opencontainers.image.source="https://github.com/mul-cps/cps-jupyter-notebook" \
+      org.opencontainers.image.description="CPS Jupyter Notebook - PyTorch + CUDA + VS Code (code-server)"
+
+USER root
+
+# Basic system deps useful for ML and dev
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      git curl ca-certificates \
+      build-essential cmake ninja-build \
+      pkg-config \
+      libopenblas-dev libomp-dev \
+      htop tmux \
+      openssh-client \
+      && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ---- Python-level tooling & proxy integrations ----
+# jupyter-server-proxy is already used in your cluster; jupyter-code-server plugs into it
+RUN pip install --no-cache-dir \
+      jupyter-server-proxy \
+      jupyter-code-server \
+      code-server
+
+# ---- Modern PyTorch stack (adjust versions / CUDA index as needed) ----
+# NOTE: adjust the index-url to the CUDA version actually in the base image if required.
+RUN pip install --no-cache-dir \
+      "torch==2.4.*" \
+      "torchvision==0.19.*" \
+      "torchaudio==2.4.*" \
+      --index-url https://download.pytorch.org/whl/cu124 && \
+    pip install --no-cache-dir \
+      lightning \
+      einops \
+      xformers \
+      transformers \
+      datasets \
+      accelerate \
+      bitsandbytes \
+      timm \
+      scikit-learn \
+      pandas \
+      seaborn \
+      matplotlib \
+      ipywidgets \
+      jupyterlab-code-formatter \
+      black isort ruff \
+      jupyterlab-lsp python-lsp-server[all]
+
+# Enable Notebook / Lab server extensions so they’re picked up automatically
+RUN jupyter server extension enable --sys-prefix jupyter_server_proxy && \
+    jupyter server extension enable --sys-prefix jupyter_code_server || true
+
+# JupyterLab extension for VS Code icon (served via jupyter-code-server)
+# (jupyter-code-server ships the labextension; this is a no-op if not present)
+RUN jupyter labextension install jupyter-code-server --no-build || true && \
+    jupyter lab build --dev-build=False --minimize=False
+
+# Set defaults that work well under JupyterHub/KubeSpawner
+ENV JUPYTER_ENABLE_LAB=yes \
+    # jupyter-code-server / code-server tuning
+    CODE_SERVER_ARGS="--auth none --disable-telemetry" \
+    # Let jupyter-server-proxy serve VS Code under /user/.../proxy
+    JUPYTERHUB_SINGLEUSER_APP="jupyter_server.serverapp.ServerApp"
+
+USER jovyan
+
+WORKDIR /home/jovyan
+
+CMD ["start-notebook.sh"]

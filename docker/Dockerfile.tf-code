@@ -1,0 +1,57 @@
+# docker/Dockerfile.tf-code
+FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+
+LABEL maintainer="CPS Lab <cps@unileoben.ac.at>" \
+      org.opencontainers.image.source="https://github.com/mul-cps/cps-jupyter-notebook" \
+      org.opencontainers.image.description="CPS Jupyter Notebook - TensorFlow + CUDA + VS Code (code-server)"
+
+USER root
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      git curl ca-certificates \
+      build-essential cmake ninja-build \
+      pkg-config \
+      libopenblas-dev libomp-dev \
+      htop tmux \
+      openssh-client \
+      && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Proxy integrations: same as PyTorch image
+RUN pip install --no-cache-dir \
+      jupyter-server-proxy \
+      jupyter-code-server \
+      code-server
+
+# TensorFlow + ecosystem
+# Adjust version to match CUDA in the base image if you want a pinned combo
+RUN pip install --no-cache-dir \
+      "tensorflow[and-cuda]==2.17.*" \
+      tensorflow-datasets \
+      tensorflow-addons \
+      keras \
+      tf-keras \
+      scikit-learn \
+      pandas \
+      seaborn \
+      matplotlib \
+      ipywidgets \
+      jupyterlab-code-formatter \
+      black isort ruff \
+      jupyterlab-lsp python-lsp-server[all]
+
+RUN jupyter server extension enable --sys-prefix jupyter_server_proxy && \
+    jupyter server extension enable --sys-prefix jupyter_code_server || true
+
+RUN jupyter labextension install jupyter-code-server --no-build || true && \
+    jupyter lab build --dev-build=False --minimize=False
+
+ENV JUPYTER_ENABLE_LAB=yes \
+    CODE_SERVER_ARGS="--auth none --disable-telemetry" \
+    JUPYTERHUB_SINGLEUSER_APP="jupyter_server.serverapp.ServerApp"
+
+USER jovyan
+WORKDIR /home/jovyan
+
+CMD ["start-notebook.sh"]
