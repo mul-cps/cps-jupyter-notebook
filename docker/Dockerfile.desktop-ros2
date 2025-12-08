@@ -1,15 +1,23 @@
-# docker/Dockerfile.desktop-ros2
+# syntax=docker/dockerfile:1.7
+
 FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
 
 LABEL maintainer="CPS Lab <cps@unileoben.ac.at>" \
       org.opencontainers.image.source="https://github.com/mul-cps/cps-jupyter-notebook" \
-      org.opencontainers.image.description="CPS Jupyter Notebook - Remote Desktop (XFCE) + ROS 2 Jazzy + VS Code + Tailscale + CUDA"
+      org.opencontainers.image.description="CPS Jupyter Notebook - Remote Desktop (XFCE) + ROS 2 Jazzy + VS Code + Tailscale + CUDA + CPS addons"
+
+ARG NB_USER=jovyan
+ARG NB_UID=1000
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    ROS_DISTRO=jazzy \
+    ROS_PYTHON_VERSION=3
 
 USER root
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# --- Desktop + VNC stack as recommended by jupyter-remote-desktop-proxy ---
+# ---------- Desktop + VNC + base dev tools ----------
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       dbus-x11 \
@@ -20,35 +28,37 @@ RUN apt-get update && \
       xorg \
       xubuntu-icon-theme \
       tigervnc-standalone-server \
-      # extra utilities
       xfce4-terminal \
-      novnc websockify \
+      novnc \
+      websockify \
       supervisor \
       pulseaudio \
-      # dev tools
-      git curl wget ca-certificates \
-      build-essential cmake ninja-build \
+      git \
+      curl \
+      wget \
+      ca-certificates \
+      build-essential \
+      cmake \
+      ninja-build \
       pkg-config \
-      htop tmux \
-      # ROS2 build helpers
-      python3-vcstool \
-      python3-colcon-common-extensions \
-      && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+      htop \
+      tmux \
+      gh \
+      nodejs \
+      btop \
+      openssh-server \
+    && curl -fsSL https://code-server.dev/install.sh | sh \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# --- VS Code GUI (desktop app) ---
+# VS Code desktop app
 RUN wget -qO /tmp/code.deb https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64 && \
-    apt-get update && \
-    apt-get install -y /tmp/code.deb && \
+    apt-get update && apt-get install -y /tmp/code.deb && \
     rm -f /tmp/code.deb && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# --- ROS 2 Jazzy (desktop flavor) ---
-# See ROS docs for jazzy setup on Ubuntu 24.04 :contentReference[oaicite:2]{index=2}
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository universe && \
-    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+# ---------- ROS 2 Jazzy desktop + extras ----------
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
       -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
       > /etc/apt/sources.list.d/ros2.list && \
@@ -60,47 +70,33 @@ RUN apt-get update && \
       ros-jazzy-rmw-cyclonedds-cpp \
       ros-jazzy-perception \
       ros-dev-tools \
-      && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# ROS environment
-ENV ROS_DISTRO=jazzy \
-    ROS_ROOT=/opt/ros/jazzy \
-    ROS_PYTHON_VERSION=3
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /etc/bash.bashrc
 
-# --- Tailscale (userspace mode use) ---
+# Tailscale (userspace mode; you’ll run it manually if needed)
 RUN curl -fsSL https://tailscale.com/install.sh | sh
-
-# You will start tailscaled in userspace from within the container if needed:
-#   tailscaled --tun=userspace-networking --socks5-server=localhost:1055 ...
-# and then `tailscale up ...` controlled via env variables / secrets.
 ENV TAILSCALE_STATE_DIR=/var/lib/tailscale
 
-# --- Proxy integrations: remote desktop + code-server ---
-RUN pip install --no-cache-dir \
+# ---------- Python & Jupyter extensions (CPS addons + ML + proxies) ----------
+RUN pip install --no-cache-dir --upgrade \
       jupyter-remote-desktop-proxy \
       jupyter-server-proxy \
-      jupyter-code-server \
-      code-server
-
-RUN jupyter server extension enable --sys-prefix jupyter_server_proxy && \
-    jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy && \
-    jupyter server extension enable --sys-prefix jupyter_code_server || true
-
-# JupyterLab front-end extensions (best-effort)
-RUN jupyter labextension install jupyter-remote-desktop-proxy --no-build || true && \
-    jupyter labextension install jupyter-code-server --no-build || true && \
-    jupyter lab build --dev-build=False --minimize=False
-
-# --- Python ML / robotics extras ---
-RUN pip install --no-cache-dir \
+      jupyterlab-git \
+      nbgitpuller \
+      jupyter-resource-usage \
+      catppuccin-jupyterlab \
+      jupyterlab-horizon-theme \
+      jupyter-sshd-proxy \
+      git+https://github.com/bjoernellens1/jupyter-code-server \
+      jupyter-glances-proxy \
+      git-credential-helpers \
+      jupyterlab-nvdashboard \
+      # ML / robotics stack
       "torch==2.4.*" \
       "torchvision==0.19.*" \
       "torchaudio==2.4.*" \
-      --index-url https://download.pytorch.org/whl/cu124 && \
-    pip install --no-cache-dir \
+      --index-url https://download.pytorch.org/whl/cu124 \
       transformers \
       datasets \
       accelerate \
@@ -113,20 +109,40 @@ RUN pip install --no-cache-dir \
       matplotlib \
       seaborn \
       ipywidgets \
-      jupyterlab-lsp python-lsp-server[all] \
-      black isort ruff \
+      jupyterlab-lsp \
+      "python-lsp-server[all]" \
+      black \
+      isort \
+      ruff \
       rosdep \
-      colcon-common-extensions
+      colcon-common-extensions \
+      vcstool \
+    && npm cache clean --force \
+    && rm -rf $CONDA_DIR/share/jupyter/lab/staging || true
+
+RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
+    jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy || true && \
+    jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
+
+# Sudo + password via secret (same pattern)
+RUN usermod -aG sudo ${NB_USER}
+
+RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD \
+    echo "${NB_USER}:${ROOT_PASSWORD}" | chpasswd
+
+RUN mkdir -p /root/.ipython/profile_default
+COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
 # Remote desktop proxy tuning
 ENV JUPYTER_REMOTE_DESKTOP_PROXY_TITLE="Desktop (XFCE + VS Code + ROS2 Jazzy)" \
     JUPYTER_REMOTE_DESKTOP_PROXY_VNC_COMMAND="vncserver -geometry 1920x1080 -SecurityTypes None" \
     JUPYTER_ENABLE_LAB=yes \
-    CODE_SERVER_ARGS="--auth none --disable-telemetry"
+    CODE_SERVER_ARGS="--auth none --disable-telemetry" \
+    JUPYTERHUB_SINGLEUSER_APP="jupyter_server.serverapp.ServerApp"
 
-# Make sure ROS env is available for jovyan
-USER jovyan
-WORKDIR /home/jovyan
+USER ${NB_USER}
+WORKDIR /home/${NB_USER}
+
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 
 CMD ["start-notebook.sh"]

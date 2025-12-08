@@ -1,32 +1,57 @@
-# docker/Dockerfile.tf-code
+# syntax=docker/dockerfile:1.7
+
 FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
 
 LABEL maintainer="CPS Lab <cps@unileoben.ac.at>" \
       org.opencontainers.image.source="https://github.com/mul-cps/cps-jupyter-notebook" \
-      org.opencontainers.image.description="CPS Jupyter Notebook - TensorFlow + CUDA + VS Code (code-server)"
+      org.opencontainers.image.description="CPS Jupyter Notebook - TensorFlow + CUDA + VS Code (code-server) + CPS addons"
+
+ARG NB_USER=jovyan
+ARG NB_UID=1000
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 USER root
 
+# ---------- System tools & extras ----------
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      git curl ca-certificates \
-      build-essential cmake ninja-build \
+    apt-get install -y --no-install-recommends \
+      git \
+      curl \
+      ca-certificates \
+      build-essential \
+      cmake \
+      ninja-build \
       pkg-config \
-      libopenblas-dev libomp-dev \
-      htop tmux \
+      libopenblas-dev \
+      libomp-dev \
+      htop \
+      tmux \
       openssh-client \
-      && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+      gh \
+      nodejs \
+      btop \
+      openssh-server \
+    && curl -fsSL https://code-server.dev/install.sh | sh \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Proxy integrations: same as PyTorch image
-RUN pip install --no-cache-dir \
+# ---------- Python & Jupyter extensions ----------
+RUN pip install --no-cache-dir --upgrade \
+      jupyterlab-git \
+      nbgitpuller \
+      jupyter-resource-usage \
+      catppuccin-jupyterlab \
+      jupyterlab-horizon-theme \
+      jupyter-sshd-proxy \
       jupyter-server-proxy \
-      jupyter-code-server \
-      code-server
-
-# TensorFlow + ecosystem
-# Adjust version to match CUDA in the base image if you want a pinned combo
-RUN pip install --no-cache-dir \
+      git+https://github.com/bjoernellens1/jupyter-code-server \
+      jupyter-glances-proxy \
+      git-credential-helpers \
+      jupyterlab-nvdashboard \
+      # TF stack
       "tensorflow[and-cuda]==2.17.*" \
       tensorflow-datasets \
       tensorflow-addons \
@@ -38,20 +63,30 @@ RUN pip install --no-cache-dir \
       matplotlib \
       ipywidgets \
       jupyterlab-code-formatter \
-      black isort ruff \
-      jupyterlab-lsp python-lsp-server[all]
+      black \
+      isort \
+      ruff \
+      jupyterlab-lsp \
+      "python-lsp-server[all]" \
+    && npm cache clean --force \
+    && rm -rf $CONDA_DIR/share/jupyter/lab/staging || true
 
-RUN jupyter server extension enable --sys-prefix jupyter_server_proxy && \
-    jupyter server extension enable --sys-prefix jupyter_code_server || true
+RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
+    jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
 
-RUN jupyter labextension install jupyter-code-server --no-build || true && \
-    jupyter lab build --dev-build=False --minimize=False
+RUN usermod -aG sudo ${NB_USER}
+
+RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD \
+    echo "${NB_USER}:${ROOT_PASSWORD}" | chpasswd
+
+RUN mkdir -p /root/.ipython/profile_default
+COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
 ENV JUPYTER_ENABLE_LAB=yes \
     CODE_SERVER_ARGS="--auth none --disable-telemetry" \
     JUPYTERHUB_SINGLEUSER_APP="jupyter_server.serverapp.ServerApp"
 
-USER jovyan
-WORKDIR /home/jovyan
+USER ${NB_USER}
+WORKDIR /home/${NB_USER}
 
 CMD ["start-notebook.sh"]
