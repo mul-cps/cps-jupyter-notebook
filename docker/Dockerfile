@@ -33,7 +33,9 @@ ENV username=jovyan
 
 # RUN adduser --gecos "" --disabled-password $username
 # from: https://docs.docker.com/build/ci/github-actions/secrets/#secret-mounts
-RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD echo "${username}:${ROOT_PASSWORD}" | chpasswd
+# RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD echo "${username}:${ROOT_PASSWORD}" | chpasswd
+RUN --mount=type=secret,id=root_password \
+    echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd
 
 # enable passwordless sudo
 # RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
