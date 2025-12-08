@@ -35,7 +35,11 @@ ENV username=jovyan
 # from: https://docs.docker.com/build/ci/github-actions/secrets/#secret-mounts
 # RUN --mount=type=secret,id=root_password,env=ROOT_PASSWORD echo "${username}:${ROOT_PASSWORD}" | chpasswd
 RUN --mount=type=secret,id=root_password \
-    echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd
+    if [ -f /run/secrets/root_password ] && [ -s /run/secrets/root_password ]; then \
+      echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd ; \
+    else \
+      echo "INFO: /run/secrets/root_password missing or empty, skipping password change"; \
+    fi
 
 # enable passwordless sudo
 # RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers

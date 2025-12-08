@@ -88,7 +88,11 @@ RUN usermod -aG sudo ${NB_USER}
 # Set user password via BuildKit secret "root_password"
 # In GitHub Actions, pass:  secrets: | root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}
 RUN --mount=type=secret,id=root_password \
-    echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd
+    if [ -f /run/secrets/root_password ] && [ -s /run/secrets/root_password ]; then \
+      echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd ; \
+    else \
+      echo "INFO: /run/secrets/root_password missing or empty, skipping password change"; \
+    fi
 
 # Make sure root IPython profile dir exists for the config copy
 RUN mkdir -p /root/.ipython/profile_default
