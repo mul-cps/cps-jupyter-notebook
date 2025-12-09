@@ -95,6 +95,8 @@ RUN apt-get update && \
     apt-get install -y ./turbovnc.deb && \
     rm turbovnc.deb && \
     ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
+    ln -sf /opt/TurboVNC/bin/Xvnc /usr/local/bin/Xvnc && \
+    ln -sf /opt/TurboVNC/bin/vncpasswd /usr/local/bin/vncpasswd && \
     apt-get remove -y tigervnc-standalone-server || true && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
