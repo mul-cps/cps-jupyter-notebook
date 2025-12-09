@@ -7,8 +7,11 @@ ENV PIP_ROOT_USER_ACTION=ignore
 USER root
 
 # Basic tooling + code-server + sudo
-RUN apt-get update && \
+RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     git \
     curl \
     ca-certificates \
@@ -34,7 +37,8 @@ RUN apt-get update && \
 RUN usermod -aG sudo "${NB_USER}"
 
 # Jupyter + UI + code-server integration (PyPI index intact!)
-RUN pip install --no-cache-dir --upgrade \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
     jupyterlab-git \
     nbgitpuller \
     jupyter-resource-usage \
@@ -57,7 +61,8 @@ RUN pip install --no-cache-dir --upgrade \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # TensorFlow GPU stack (no addons – they break on cp312)
-RUN pip install --no-cache-dir --upgrade \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
     "tensorflow[and-cuda]==2.17.*" \
     tensorflow-datasets \
     keras \

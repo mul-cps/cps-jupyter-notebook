@@ -100,6 +100,8 @@ jobs:
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Generate Job Summary
         if: always()

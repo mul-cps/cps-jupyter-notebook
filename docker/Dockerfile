@@ -2,7 +2,8 @@ from quay.io/jupyter/datascience-notebook:lab-4.2.1 as base
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
-RUN pip install --upgrade \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade \
     jupyterlab-git \
     nbgitpuller \
     jupyter-resource-usage \
@@ -20,7 +21,11 @@ RUN pip install --upgrade \
 #RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
 USER root
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    --no-install-recommends \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     gh \
     nodejs \
     npm \

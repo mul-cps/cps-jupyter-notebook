@@ -7,8 +7,11 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Locale + base deps for ROS repo
-RUN apt-get update && \
+RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     locales \
     gnupg2 \
     lsb-release \
@@ -31,6 +34,8 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
 # Desktop stack + ROS 2 + dev tooling + code-server + sudo
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     # Desktop / VNC stack
     dbus-x11 \
     xfce4 \
@@ -84,7 +89,8 @@ RUN rosdep init || true && \
 RUN usermod -aG sudo "${NB_USER}"
 
 # Jupyter + remote-desktop + proxies
-RUN pip install --no-cache-dir --upgrade \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
     jupyter-remote-desktop-proxy \
     jupyter-server-proxy \
     jupyterlab-git \
@@ -107,12 +113,13 @@ RUN pip install --no-cache-dir --upgrade \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # PyTorch GPU stack for robotics work
-RUN pip install --no-cache-dir --upgrade \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
     "torch==2.4.*" \
     "torchvision==0.19.*" \
     "torchaudio==2.4.*" \
     --index-url https://download.pytorch.org/whl/cu124 && \
-    pip install --no-cache-dir --upgrade \
+    pip install --upgrade \
     transformers \
     datasets \
     accelerate \
