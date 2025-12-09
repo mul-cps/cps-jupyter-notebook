@@ -55,7 +55,8 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     "python-lsp-server[all]" \
     black \
     isort \
-    ruff && \
+    ruff \
+    notebook-intelligence && \
     npm cache clean --force && \
     rm -rf /opt/conda/share/jupyter/lab/staging
 

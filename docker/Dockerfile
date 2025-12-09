@@ -13,6 +13,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     jupyter-server-proxy \
     git+https://github.com/bjoernellens1/jupyter-code-server \
     jupyter-glances-proxy \
+    notebook-intelligence \
     git-credential-helpers && \
     npm cache clean --force && \
     rm -rf $CONDA_DIR/share/jupyter/lab/staging
