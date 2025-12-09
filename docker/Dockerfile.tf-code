@@ -7,11 +7,12 @@ ENV PIP_ROOT_USER_ACTION=ignore
 USER root
 
 # Basic tooling + code-server + sudo
-RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+# Basic tooling + code-server + sudo
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     git \
     curl \
     ca-certificates \
@@ -73,8 +74,12 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     matplotlib
 
 # Enable server extensions (don’t fail build if they’re a bit picky)
-RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
+RUN    jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy || true && \
     jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
+
+# Copy permission fix script
+COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
+RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
 
 # Optional IPython config (copied to root; adjust if you want it for NB_USER)
 RUN mkdir -p /root/.ipython/profile_default
@@ -82,7 +87,10 @@ COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_conf
 
 RUN chown -R ${NB_USER}:users /home/${NB_USER}
 
-USER ${NB_USER}
+RUN chown -R ${NB_USER}:users /home/${NB_USER}
+
+# Switch to root to allow fixing permissions on startup
+USER root
 WORKDIR /home/${NB_USER}/work
 
 # Install VS Code extensions
