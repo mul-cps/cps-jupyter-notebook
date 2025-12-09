@@ -53,3 +53,12 @@ USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
 WORKDIR /home/jovyan/work
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
+
+# Install VS Code extensions
+RUN code-server --install-extension ms-python.python && \
+    code-server --install-extension ms-toolsai.jupyter && \
+    code-server --install-extension charliermarsh.ruff && \
+    code-server --install-extension tamasfe.even-better-toml && \
+    code-server --install-extension redhat.vscode-yaml && \
+    code-server --install-extension ms-azuretools.vscode-docker && \
+    code-server --install-extension mhutchie.git-graph
