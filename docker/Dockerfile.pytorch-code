@@ -1,29 +1,32 @@
-FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ENV PIP_ROOT_USER_ACTION=ignore
 
 USER root
 
 # Basic tooling + code-server + sudo
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        git \
-        curl \
-        ca-certificates \
-        build-essential \
-        cmake \
-        ninja-build \
-        pkg-config \
-        libopenblas-dev \
-        libomp-dev \
-        htop \
-        tmux \
-        openssh-client \
-        gh \
-        nodejs \
-        btop \
-        openssh-server \
-        sudo && \
+    git \
+    curl \
+    ca-certificates \
+    build-essential \
+    cmake \
+    ninja-build \
+    pkg-config \
+    libopenblas-dev \
+    libomp-dev \
+    htop \
+    tmux \
+    openssh-client \
+    gh \
+    nodejs \
+    npm \
+    btop \
+    openssh-server \
+    sudo && \
     curl -fsSL https://code-server.dev/install.sh | sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -31,46 +34,46 @@ RUN usermod -aG sudo "${NB_USER}"
 
 # Jupyter + UI + proxies (keep PyPI as default index!)
 RUN pip install --no-cache-dir --upgrade \
-      jupyterlab-git \
-      nbgitpuller \
-      jupyter-resource-usage \
-      catppuccin-jupyterlab \
-      jupyterlab-horizon-theme \
-      jupyter-sshd-proxy \
-      jupyter-server-proxy \
-      git+https://github.com/bjoernellens1/jupyter-code-server \
-      jupyter-glances-proxy \
-      git-credential-helpers \
-      jupyterlab-nvdashboard \
-      ipywidgets \
-      jupyterlab-lsp \
-      "python-lsp-server[all]" \
-      black \
-      isort \
-      ruff && \
+    jupyterlab-git \
+    nbgitpuller \
+    jupyter-resource-usage \
+    catppuccin-jupyterlab \
+    jupyterlab-horizon-theme \
+    jupyter-sshd-proxy \
+    jupyter-server-proxy \
+    git+https://github.com/bjoernellens1/jupyter-code-server \
+    jupyter-glances-proxy \
+    git-credential-helpers \
+    jupyterlab-nvdashboard \
+    ipywidgets \
+    jupyterlab-lsp \
+    "python-lsp-server[all]" \
+    black \
+    isort \
+    ruff && \
     npm cache clean --force && \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # PyTorch GPU stack – separate pip call with CUDA 12.4 index
 RUN pip install --no-cache-dir --upgrade \
-      "torch==2.4.*" \
-      "torchvision==0.19.*" \
-      "torchaudio==2.4.*" \
-      --index-url https://download.pytorch.org/whl/cu124
+    "torch==2.4.*" \
+    "torchvision==0.19.*" \
+    "torchaudio==2.4.*" \
+    --index-url https://download.pytorch.org/whl/cu124
 
 # Vision / ML tooling
 RUN pip install --no-cache-dir --upgrade \
-      transformers \
-      datasets \
-      accelerate \
-      lightning \
-      timm \
-      opencv-python-headless \
-      scikit-image \
-      scikit-learn \
-      pandas \
-      matplotlib \
-      seaborn
+    transformers \
+    datasets \
+    accelerate \
+    lightning \
+    timm \
+    opencv-python-headless \
+    scikit-image \
+    scikit-learn \
+    pandas \
+    matplotlib \
+    seaborn
 
 # Enable extensions
 RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
