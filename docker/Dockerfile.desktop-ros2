@@ -79,12 +79,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     curl -fsSL https://code-server.dev/install.sh | sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install Copilot
+RUN apt-get update && apt-get install -y jq && \
+    curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
 # Install TurboVNC
 RUN apt-get update && \
-    wget -q -O turbovnc.deb https://sourceforge.net/projects/turbovnc/files/3.1.1/turbovnc_3.1.1_amd64.deb/download && \
+    wget -q -O turbovnc.deb https://github.com/TurboVNC/turbovnc/releases/download/3.1.1/turbovnc_3.1.1_amd64.deb && \
     apt-get install -y ./turbovnc.deb && \
     rm turbovnc.deb && \
     ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
+    apt-get remove -y tigervnc-standalone-server || true && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS environment for all future shells

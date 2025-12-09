@@ -63,6 +63,11 @@ USER jovyan
 WORKDIR /home/jovyan/work
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
+# Install Copilot
+RUN apt-get update && apt-get install -y jq && \
+    curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Install VS Code extensions
 RUN code-server --install-extension ms-python.python && \
     code-server --install-extension ms-toolsai.jupyter && \
