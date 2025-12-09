@@ -21,11 +21,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 #RUN conda install -c rapidsai-nightly -c conda-forge jupyterlab-nvdashboard
 
 USER root
-RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
     apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     --no-install-recommends \
-    --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     gh \
     nodejs \
     npm \
@@ -54,6 +54,10 @@ RUN --mount=type=secret,id=root_password \
 
 RUN chown -R jovyan:users /home/jovyan
 
+# Copy permission fix script
+COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
+RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
+
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
 WORKDIR /home/jovyan/work
@@ -67,3 +71,7 @@ RUN code-server --install-extension ms-python.python && \
     code-server --install-extension redhat.vscode-yaml && \
     code-server --install-extension ms-azuretools.vscode-docker && \
     code-server --install-extension mhutchie.git-graph
+
+# Switch to root to allow fixing permissions on startup
+USER root
+WORKDIR /home/jovyan/work
