@@ -81,8 +81,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Install Copilot
 RUN apt-get update && apt-get install -y jq && \
-    curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+USER ${NB_USER}
+RUN curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash
+USER root
 
 
 # Install TurboVNC

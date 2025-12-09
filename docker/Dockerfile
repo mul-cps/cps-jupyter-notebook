@@ -29,6 +29,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     gh \
     nodejs \
     npm \
+    jq \
     btop \
     openssh-server \
     && curl -fsSL https://code-server.dev/install.sh | sh \
@@ -64,9 +65,8 @@ WORKDIR /home/jovyan/work
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
 # Install Copilot
-RUN apt-get update && apt-get install -y jq && \
-    curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install Copilot
+RUN curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash
 
 # Install VS Code extensions
 RUN code-server --install-extension ms-python.python && \
