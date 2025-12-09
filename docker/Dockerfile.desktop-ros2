@@ -45,7 +45,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     xfce4-settings \
     xorg \
     xubuntu-icon-theme \
-    tigervnc-standalone-server \
+    # tigervnc-standalone-server \
     xfce4-terminal \
     novnc \
     websockify \
@@ -77,6 +77,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     python3-rosdep && \
     # code-server (VS Code in browser)
     curl -fsSL https://code-server.dev/install.sh | sh && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install TurboVNC
+RUN apt-get update && \
+    wget -q -O turbovnc.deb https://sourceforge.net/projects/turbovnc/files/3.1.1/turbovnc_3.1.1_amd64.deb/download && \
+    apt-get install -y ./turbovnc.deb && \
+    rm turbovnc.deb && \
+    ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS environment for all future shells
