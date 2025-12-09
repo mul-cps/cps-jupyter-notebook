@@ -66,7 +66,8 @@ COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_conf
 
 # Install Copilot
 # Install Copilot
-RUN curl -fsSL https://raw.githubusercontent.com/sunpix/howto-install-copilot-in-code-server/refs/heads/main/install-copilot.sh | bash
+COPY --chown=jovyan:users install-copilot.sh /tmp/install-copilot.sh
+RUN chmod +x /tmp/install-copilot.sh && /tmp/install-copilot.sh && rm /tmp/install-copilot.sh
 
 # Install VS Code extensions
 RUN code-server --install-extension ms-python.python && \
