@@ -100,3 +100,11 @@ jobs:
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
+
+      - name: Generate Job Summary
+        if: always()
+        run: |
+          echo "### Build Summary :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "| Variant | Dockerfile | Tags |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| ${{ matrix.variant.name }} | ${{ matrix.variant.dockerfile }} | ${{ steps.meta.outputs.tags }} |" >> $GITHUB_STEP_SUMMARY

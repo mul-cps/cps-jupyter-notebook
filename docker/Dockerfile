@@ -47,6 +47,8 @@ RUN --mount=type=secret,id=root_password \
 # enable passwordless sudo
 # RUN echo 'jovyan ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
+RUN chown -R jovyan:jovyan /home/jovyan
+
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"
 WORKDIR /home/jovyan/work

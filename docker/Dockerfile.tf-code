@@ -75,5 +75,7 @@ RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true &&
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
+RUN chown -R ${NB_USER}:${NB_USER} /home/${NB_USER}
+
 USER ${NB_USER}
 WORKDIR /home/${NB_USER}/work
