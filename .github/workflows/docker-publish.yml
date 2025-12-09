@@ -5,11 +5,85 @@ on:
     branches: [ main ]
     tags:
       - "v*.*.*"
+    paths:
+      - 'docker/**'
+      - '.github/workflows/docker-publish.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'docker/**'
+      - '.github/workflows/docker-publish.yml'
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            workflow: .github/workflows/docker-publish.yml
+            pytorch_code: docker/Dockerfile.pytorch-code
+            tf_code: docker/Dockerfile.tf-code
+            desktop_ros2: docker/Dockerfile.desktop-ros2
+            standard_cpu: docker/Dockerfile
+            common:
+              - 'docker/**'
+              - '!docker/Dockerfile*'
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          # Initialize empty array
+          VARIANTS="[]"
+
+          # Helper function to add variant
+          add_variant() {
+            local name=$1
+            local dockerfile=$2
+            local suffix=$3
+            # Use jq to append object to array
+            VARIANTS=$(echo "$VARIANTS" | jq --arg name "$name" --arg dockerfile "$dockerfile" --arg suffix "$suffix" \
+              '. + [{"name": $name, "dockerfile": $dockerfile, "suffix": $suffix}]')
+          }
+
+          # Check if we need to build everything (common files or workflow changed)
+          if [ "${{ steps.changes.outputs.common }}" == "true" ] || [ "${{ steps.changes.outputs.workflow }}" == "true" ]; then
+            echo "Common files or workflow changed. Building all variants."
+            add_variant "pytorch-code" "docker/Dockerfile.pytorch-code" "pytorch-code"
+            add_variant "tf-code" "docker/Dockerfile.tf-code" "tf-code"
+            add_variant "desktop-ros2" "docker/Dockerfile.desktop-ros2" "desktop-ros2"
+            add_variant "standard-cpu" "docker/Dockerfile" "standard-cpu"
+          else
+            # Check individual changes
+            if [ "${{ steps.changes.outputs.pytorch_code }}" == "true" ]; then
+              add_variant "pytorch-code" "docker/Dockerfile.pytorch-code" "pytorch-code"
+            fi
+            if [ "${{ steps.changes.outputs.tf_code }}" == "true" ]; then
+              add_variant "tf-code" "docker/Dockerfile.tf-code" "tf-code"
+            fi
+            if [ "${{ steps.changes.outputs.desktop_ros2 }}" == "true" ]; then
+              add_variant "desktop-ros2" "docker/Dockerfile.desktop-ros2" "desktop-ros2"
+            fi
+            if [ "${{ steps.changes.outputs.standard_cpu }}" == "true" ]; then
+              add_variant "standard-cpu" "docker/Dockerfile" "standard-cpu"
+            fi
+          fi
+
+          # Compact JSON to single line just in case
+          VARIANTS=$(echo "$VARIANTS" | jq -c '.')
+          echo "Generated matrix: $VARIANTS"
+          echo "matrix={\"variant\": $VARIANTS}" >> $GITHUB_OUTPUT
+
   build-and-push:
+    needs: check-changes
+    if: ${{ fromJson(needs.check-changes.outputs.matrix).variant[0] != null }}
     runs-on: ubuntu-latest
 
     permissions:
@@ -19,20 +93,8 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        variant:
-          - name: pytorch-code
-            dockerfile: docker/Dockerfile.pytorch-code
-            suffix: pytorch-code
-          - name: tf-code
-            dockerfile: docker/Dockerfile.tf-code
-            suffix: tf-code
-          - name: desktop-ros2
-            dockerfile: docker/Dockerfile.desktop-ros2
-            suffix: desktop-ros2
-          - name: standard-cpu
-            dockerfile: docker/Dockerfile
-            suffix: standard-cpu
+      matrix: ${{ fromJson(needs.check-changes.outputs.matrix) }}
+    
     env:
       IMAGE_NAME: cps-jupyter-notebook
 
@@ -42,21 +104,13 @@ jobs:
 
       - name: Free up disk space on runner
         run: |
-          echo "Initial disk usage:"
-          df -h
-
           echo "Removing large preinstalled SDKs..."
           sudo rm -rf /usr/local/lib/android || true
           sudo rm -rf /usr/share/dotnet || true
           sudo rm -rf /opt/ghc || true
-          sudo rm -rf /opt/hostedtoolcache || true
-
-          echo "Cleaning docker images and buildx cache..."
+          
+          echo "Cleaning docker system..."
           docker system prune -af || true
-          docker builder prune -af || true
-
-          echo "Disk usage after cleanup:"
-          df -h
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -96,7 +150,6 @@ jobs:
             linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # If you want to build with secrets for admin/root passwords like the base images:
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
