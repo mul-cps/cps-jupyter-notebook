@@ -30,6 +30,9 @@ jobs:
           - name: desktop-ros2
             dockerfile: docker/Dockerfile.desktop-ros2
             suffix: desktop-ros2
+          - name: comfyui
+            dockerfile: docker/Dockerfile.comfyui
+            suffix: comfyui
           - name: standard-cpu
             dockerfile: docker/Dockerfile
             suffix: standard-cpu

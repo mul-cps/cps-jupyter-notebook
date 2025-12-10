@@ -1,0 +1,95 @@
+# ComfyUI Jupyter Notebook Image
+# Based on the official Jupyter datascience-notebook with ComfyUI integration
+
+FROM quay.io/jupyter/pytorch-notebook:lab-4.2.1 as base
+
+USER root
+
+# Install system dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    git \
+    wget \
+    curl \
+    build-essential \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    gh \
+    nodejs \
+    btop \
+    openssh-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install code-server
+RUN curl -fsSL https://code-server.dev/install.sh | sh
+
+# Add jovyan to sudo group
+RUN usermod -aG sudo jovyan
+
+USER jovyan
+
+# Install JupyterLab extensions and jupyter-server-proxy
+RUN pip install --upgrade --no-cache-dir \
+    jupyterlab-git \
+    nbgitpuller \
+    jupyter-resource-usage \
+    catppuccin-jupyterlab \
+    jupyterlab-horizon-theme \
+    jupyter-sshd-proxy \
+    jupyter-server-proxy \
+    git+https://github.com/bjoernellens1/jupyter-code-server \
+    jupyter-glances-proxy \
+    git-credential-helpers && \
+    npm cache clean --force && \
+    rm -rf $CONDA_DIR/share/jupyter/lab/staging
+
+# Clone ComfyUI
+WORKDIR /opt/comfyui
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git .
+
+# Install ComfyUI dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Clone ComfyUI Manager into custom_nodes
+WORKDIR /opt/comfyui/custom_nodes
+RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git
+
+# Install ComfyUI Manager dependencies
+WORKDIR /opt/comfyui/custom_nodes/ComfyUI-Manager
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create jupyter-server-proxy configuration for ComfyUI
+USER root
+RUN mkdir -p /etc/jupyter
+COPY comfyui_proxy_config.py /etc/jupyter/jupyter_server_config.d/comfyui_proxy.py
+
+# Set proper permissions for ComfyUI directory
+RUN chown -R jovyan:users /opt/comfyui
+
+# Handle password configuration
+RUN --mount=type=secret,id=root_password \
+    if [ -f /run/secrets/root_password ] && [ -s /run/secrets/root_password ]; then \
+      echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd ; \
+    else \
+      echo "INFO: /run/secrets/root_password missing or empty, skipping password change"; \
+    fi
+
+USER jovyan
+
+# Set working directory back to jovyan home
+WORKDIR /home/jovyan/work
+
+# Copy ipython kernel config
+COPY ipython_kernel_config.py /home/jovyan/.ipython/profile_default/ipython_kernel_config.py
+
+# Set environment variables
+ENV COMFYUI_PATH=/opt/comfyui
+ENV username=jovyan
+
+# Create a startup script to launch ComfyUI in the background
+RUN mkdir -p /home/jovyan/.local/bin
+COPY start-comfyui.sh /home/jovyan/.local/bin/start-comfyui.sh
+RUN chmod +x /home/jovyan/.local/bin/start-comfyui.sh
