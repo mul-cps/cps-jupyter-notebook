@@ -95,7 +95,10 @@ RUN apt-get update && \
     apt-get install -y ./turbovnc.deb && \
     rm turbovnc.deb && \
     ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
-    ln -sf /opt/TurboVNC/bin/Xvnc /usr/local/bin/Xvnc && \
+    ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
+    echo '#!/bin/sh' > /usr/local/bin/Xvnc && \
+    echo 'exec /opt/TurboVNC/bin/Xvnc -extension GLX "$@"' >> /usr/local/bin/Xvnc && \
+    chmod +x /usr/local/bin/Xvnc && \
     ln -sf /opt/TurboVNC/bin/vncpasswd /usr/local/bin/vncpasswd && \
     ln -sf /opt/TurboVNC/bin/vncconnect /usr/local/bin/vncconnect && \
     ln -sf /opt/TurboVNC/bin/tvncconfig /usr/local/bin/tvncconfig && \
