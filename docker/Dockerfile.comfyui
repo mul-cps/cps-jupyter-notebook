@@ -91,5 +91,4 @@ ENV username=jovyan
 
 # Create a startup script to launch ComfyUI in the background
 RUN mkdir -p /home/jovyan/.local/bin
-COPY start-comfyui.sh /home/jovyan/.local/bin/start-comfyui.sh
-RUN chmod +x /home/jovyan/.local/bin/start-comfyui.sh
+COPY --chown=jovyan:users --chmod=755 start-comfyui.sh /home/jovyan/.local/bin/start-comfyui.sh
