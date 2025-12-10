@@ -1,84 +1,121 @@
-FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ENV PIP_ROOT_USER_ACTION=ignore
 
 USER root
 
 # Basic tooling + code-server + sudo
-RUN apt-get update && \
+# Basic tooling + code-server + sudo
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
-        git \
-        curl \
-        ca-certificates \
-        build-essential \
-        cmake \
-        ninja-build \
-        pkg-config \
-        libopenblas-dev \
-        libomp-dev \
-        htop \
-        tmux \
-        openssh-client \
-        gh \
-        nodejs \
-        btop \
-        openssh-server \
-        sudo && \
+    git \
+    curl \
+    ca-certificates \
+    build-essential \
+    cmake \
+    ninja-build \
+    pkg-config \
+    libopenblas-dev \
+    libomp-dev \
+    htop \
+    tmux \
+    openssh-client \
+    gh \
+    nodejs \
+    npm \
+    btop \
+    openssh-server \
+    sudo && \
     curl -fsSL https://code-server.dev/install.sh | sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN usermod -aG sudo "${NB_USER}"
 
 # Jupyter + UI + proxies (keep PyPI as default index!)
-RUN pip install --no-cache-dir --upgrade \
-      jupyterlab-git \
-      nbgitpuller \
-      jupyter-resource-usage \
-      catppuccin-jupyterlab \
-      jupyterlab-horizon-theme \
-      jupyter-sshd-proxy \
-      jupyter-server-proxy \
-      git+https://github.com/bjoernellens1/jupyter-code-server \
-      jupyter-glances-proxy \
-      git-credential-helpers \
-      jupyterlab-nvdashboard \
-      ipywidgets \
-      jupyterlab-lsp \
-      "python-lsp-server[all]" \
-      black \
-      isort \
-      ruff && \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
+    jupyterlab-git \
+    nbgitpuller \
+    jupyter-resource-usage \
+    catppuccin-jupyterlab \
+    jupyterlab-horizon-theme \
+    jupyter-sshd-proxy \
+    jupyter-server-proxy \
+    git+https://github.com/bjoernellens1/jupyter-code-server \
+    jupyter-glances-proxy \
+    git-credential-helpers \
+    jupyterlab-nvdashboard \
+    ipywidgets \
+    jupyterlab-lsp \
+    "python-lsp-server[all]" \
+    black \
+    isort \
+    ruff \
+    notebook-intelligence && \
     npm cache clean --force && \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # PyTorch GPU stack – separate pip call with CUDA 12.4 index
-RUN pip install --no-cache-dir --upgrade \
-      "torch==2.4.*" \
-      "torchvision==0.19.*" \
-      "torchaudio==2.4.*" \
-      --index-url https://download.pytorch.org/whl/cu124
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
+    "torch==2.4.*" \
+    "torchvision==0.19.*" \
+    "torchaudio==2.4.*" \
+    --index-url https://download.pytorch.org/whl/cu124
 
 # Vision / ML tooling
-RUN pip install --no-cache-dir --upgrade \
-      transformers \
-      datasets \
-      accelerate \
-      lightning \
-      timm \
-      opencv-python-headless \
-      scikit-image \
-      scikit-learn \
-      pandas \
-      matplotlib \
-      seaborn
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
+    transformers \
+    datasets \
+    accelerate \
+    lightning \
+    timm \
+    opencv-python-headless \
+    scikit-image \
+    scikit-learn \
+    pandas \
+    matplotlib \
+    seaborn
 
 # Enable extensions
-RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
+RUN    jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy || true && \
     jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
+
+# Copy permission fix script
+COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
+RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
 
 # IPython config
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
+RUN chown -R ${NB_USER}:users /home/${NB_USER}
+
+# Install VS Code extensions
+# Install Copilot
+# Install Copilot
+RUN apt-get update && apt-get install -y jq && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 USER ${NB_USER}
+COPY --chown=${NB_USER}:users install-copilot.sh /tmp/install-copilot.sh
+RUN chmod +x /tmp/install-copilot.sh && /tmp/install-copilot.sh && rm /tmp/install-copilot.sh
+USER root
+
+RUN code-server --install-extension ms-python.python && \
+    code-server --install-extension ms-toolsai.jupyter && \
+    code-server --install-extension charliermarsh.ruff && \
+    code-server --install-extension tamasfe.even-better-toml && \
+    code-server --install-extension redhat.vscode-yaml && \
+    code-server --install-extension ms-azuretools.vscode-docker && \
+    code-server --install-extension mhutchie.git-graph
+
+# Switch to root to allow fixing permissions on startup
+USER root
 WORKDIR /home/${NB_USER}/work

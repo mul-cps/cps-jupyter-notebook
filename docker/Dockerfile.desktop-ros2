@@ -1,4 +1,4 @@
-FROM cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -7,68 +7,105 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Locale + base deps for ROS repo
-RUN apt-get update && \
+# Locale + base deps for ROS repo
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
-        locales \
-        gnupg2 \
-        lsb-release \
-        curl && \
+    locales \
+    gnupg2 \
+    lsb-release \
+    curl && \
     locale-gen en_US en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
 
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
+ENV PIP_ROOT_USER_ACTION=ignore
 
 # Add ROS 2 Jazzy apt repo
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
-      | tee /usr/share/keyrings/ros-archive-keyring.gpg > /dev/null && \
+    | tee /usr/share/keyrings/ros-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu \
-$(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
-      > /etc/apt/sources.list.d/ros2.list
+    $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+    > /etc/apt/sources.list.d/ros2.list
 
 # Desktop stack + ROS 2 + dev tooling + code-server + sudo
-RUN apt-get update && \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
-        # Desktop / VNC stack
-        dbus-x11 \
-        xfce4 \
-        xfce4-panel \
-        xfce4-session \
-        xfce4-settings \
-        xorg \
-        xubuntu-icon-theme \
-        tigervnc-standalone-server \
-        xfce4-terminal \
-        novnc \
-        websockify \
-        supervisor \
-        pulseaudio \
-        # Dev tools
-        git \
-        wget \
-        ca-certificates \
-        build-essential \
-        cmake \
-        ninja-build \
-        pkg-config \
-        libopenblas-dev \
-        libomp-dev \
-        htop \
-        tmux \
-        openssh-client \
-        gh \
-        nodejs \
-        btop \
-        openssh-server \
-        sudo \
-        # ROS 2 Jazzy desktop + build helpers
-        ros-jazzy-desktop \
-        python3-colcon-common-extensions \
-        python3-vcstool \
-        python3-rosdep && \
+    # Desktop / VNC stack
+    dbus-x11 \
+    xfce4 \
+    xfce4-panel \
+    xfce4-session \
+    xfce4-settings \
+    xorg \
+    xubuntu-icon-theme \
+    # tigervnc-standalone-server \
+    xfce4-terminal \
+    novnc \
+    websockify \
+    supervisor \
+    pulseaudio \
+    # Dev tools
+    git \
+    wget \
+    ca-certificates \
+    build-essential \
+    cmake \
+    ninja-build \
+    pkg-config \
+    libopenblas-dev \
+    libomp-dev \
+    htop \
+    tmux \
+    openssh-client \
+    gh \
+    nodejs \
+    npm \
+    btop \
+    openssh-server \
+    sudo \
+    # ROS 2 Jazzy desktop + build helpers
+    ros-jazzy-desktop \
+    python3-colcon-common-extensions \
+    python3-vcstool \
+    python3-rosdep && \
     # code-server (VS Code in browser)
     curl -fsSL https://code-server.dev/install.sh | sh && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Copilot
+RUN apt-get update && apt-get install -y jq && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+USER ${NB_USER}
+COPY --chown=${NB_USER}:users install-copilot.sh /tmp/install-copilot.sh
+RUN chmod +x /tmp/install-copilot.sh && /tmp/install-copilot.sh && rm /tmp/install-copilot.sh
+USER root
+
+
+# Install TurboVNC
+RUN apt-get update && \
+    wget -q -O turbovnc.deb https://github.com/TurboVNC/turbovnc/releases/download/3.1.1/turbovnc_3.1.1_amd64.deb && \
+    apt-get install -y ./turbovnc.deb && \
+    rm turbovnc.deb && \
+    ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
+    ln -sf /opt/TurboVNC/bin/vncserver /usr/local/bin/vncserver && \
+    echo '#!/bin/sh' > /usr/local/bin/Xvnc && \
+    echo 'exec /opt/TurboVNC/bin/Xvnc -extension GLX "$@"' >> /usr/local/bin/Xvnc && \
+    chmod +x /usr/local/bin/Xvnc && \
+    ln -sf /opt/TurboVNC/bin/vncpasswd /usr/local/bin/vncpasswd && \
+    ln -sf /opt/TurboVNC/bin/vncconnect /usr/local/bin/vncconnect && \
+    ln -sf /opt/TurboVNC/bin/tvncconfig /usr/local/bin/tvncconfig && \
+    echo '#!/bin/sh' > /usr/local/bin/webserver && \
+    echo 'exit 0' >> /usr/local/bin/webserver && \
+    chmod +x /usr/local/bin/webserver && \
+    apt-get remove -y tigervnc-standalone-server || true && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS environment for all future shells
@@ -82,55 +119,74 @@ RUN rosdep init || true && \
 RUN usermod -aG sudo "${NB_USER}"
 
 # Jupyter + remote-desktop + proxies
-RUN pip install --no-cache-dir --upgrade \
-      jupyter-remote-desktop-proxy \
-      jupyter-server-proxy \
-      jupyterlab-git \
-      nbgitpuller \
-      jupyter-resource-usage \
-      catppuccin-jupyterlab \
-      jupyterlab-horizon-theme \
-      jupyter-sshd-proxy \
-      git+https://github.com/bjoernellens1/jupyter-code-server \
-      jupyter-glances-proxy \
-      git-credential-helpers \
-      jupyterlab-nvdashboard \
-      ipywidgets \
-      jupyterlab-lsp \
-      "python-lsp-server[all]" \
-      black \
-      isort \
-      ruff && \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
+    jupyter-remote-desktop-proxy \
+    jupyter-server-proxy \
+    jupyterlab-git \
+    nbgitpuller \
+    jupyter-resource-usage \
+    catppuccin-jupyterlab \
+    jupyterlab-horizon-theme \
+    jupyter-sshd-proxy \
+    git+https://github.com/bjoernellens1/jupyter-code-server \
+    jupyter-glances-proxy \
+    git-credential-helpers \
+    jupyterlab-nvdashboard \
+    ipywidgets \
+    jupyterlab-lsp \
+    "python-lsp-server[all]" \
+    black \
+    isort \
+    ruff \
+    notebook-intelligence && \
     npm cache clean --force && \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # PyTorch GPU stack for robotics work
-RUN pip install --no-cache-dir --upgrade \
-      "torch==2.4.*" \
-      "torchvision==0.19.*" \
-      "torchaudio==2.4.*" \
-      --index-url https://download.pytorch.org/whl/cu124 && \
-    pip install --no-cache-dir --upgrade \
-      transformers \
-      datasets \
-      accelerate \
-      lightning \
-      timm \
-      opencv-python-headless \
-      scikit-image \
-      scikit-learn \
-      pandas \
-      matplotlib \
-      seaborn
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
+    "torch==2.4.*" \
+    "torchvision==0.19.*" \
+    "torchaudio==2.4.*" \
+    --index-url https://download.pytorch.org/whl/cu124 && \
+    pip install --upgrade \
+    transformers \
+    datasets \
+    accelerate \
+    lightning \
+    timm \
+    opencv-python-headless \
+    scikit-image \
+    scikit-learn \
+    pandas \
+    matplotlib \
+    seaborn
 
 # Enable server extensions
 RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true && \
     jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy || true && \
     jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
 
+# Copy permission fix script
+COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
+RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
+
 # IPython config
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
-USER ${NB_USER}
+RUN chown -R ${NB_USER}:users /home/${NB_USER}
+
+# Install VS Code extensions
+RUN code-server --install-extension ms-python.python && \
+    code-server --install-extension ms-toolsai.jupyter && \
+    code-server --install-extension charliermarsh.ruff && \
+    code-server --install-extension tamasfe.even-better-toml && \
+    code-server --install-extension redhat.vscode-yaml && \
+    code-server --install-extension ms-azuretools.vscode-docker && \
+    code-server --install-extension mhutchie.git-graph
+
+# Switch to root to allow fixing permissions on startup
+USER root
 WORKDIR /home/${NB_USER}/work
