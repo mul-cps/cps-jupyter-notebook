@@ -62,7 +62,7 @@ WORKDIR /opt/comfyui/custom_nodes/ComfyUI-Manager
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install jupyter-comfyui-proxy
-COPY jupyter-comfyui-proxy /tmp/jupyter-comfyui-proxy
+COPY --chown=jovyan:users jupyter-comfyui-proxy /tmp/jupyter-comfyui-proxy
 RUN pip install /tmp/jupyter-comfyui-proxy && \
   rm -rf /tmp/jupyter-comfyui-proxy
 
