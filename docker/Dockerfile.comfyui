@@ -1,27 +1,27 @@
 # ComfyUI Jupyter Notebook Image
 # Based on the official Jupyter datascience-notebook with ComfyUI integration
 
-FROM quay.io/jupyter/pytorch-notebook:lab-4.2.1 as base
+FROM quay.io/jupyter/pytorch-notebook:lab-4.2.1 AS base
 
 USER root
 
 # Install system dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    git \
-    wget \
-    curl \
-    build-essential \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
-    gh \
-    nodejs \
-    btop \
-    openssh-server \
-    && rm -rf /var/lib/apt/lists/*
+  git \
+  wget \
+  curl \
+  build-essential \
+  libgl1-mesa-glx \
+  libglib2.0-0 \
+  libsm6 \
+  libxext6 \
+  libxrender-dev \
+  libgomp1 \
+  gh \
+  nodejs \
+  btop \
+  openssh-server \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
@@ -33,18 +33,18 @@ USER jovyan
 
 # Install JupyterLab extensions and jupyter-server-proxy
 RUN pip install --upgrade --no-cache-dir \
-    jupyterlab-git \
-    nbgitpuller \
-    jupyter-resource-usage \
-    catppuccin-jupyterlab \
-    jupyterlab-horizon-theme \
-    jupyter-sshd-proxy \
-    jupyter-server-proxy \
-    git+https://github.com/bjoernellens1/jupyter-code-server \
-    jupyter-glances-proxy \
-    git-credential-helpers && \
-    npm cache clean --force && \
-    rm -rf $CONDA_DIR/share/jupyter/lab/staging
+  jupyterlab-git \
+  nbgitpuller \
+  jupyter-resource-usage \
+  catppuccin-jupyterlab \
+  jupyterlab-horizon-theme \
+  jupyter-sshd-proxy \
+  jupyter-server-proxy \
+  git+https://github.com/bjoernellens1/jupyter-code-server \
+  jupyter-glances-proxy \
+  git-credential-helpers && \
+  npm cache clean --force && \
+  rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
 # Clone ComfyUI
 WORKDIR /opt/comfyui
@@ -71,11 +71,11 @@ RUN chown -R jovyan:users /opt/comfyui
 
 # Handle password configuration
 RUN --mount=type=secret,id=root_password \
-    if [ -f /run/secrets/root_password ] && [ -s /run/secrets/root_password ]; then \
-      echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd ; \
-    else \
-      echo "INFO: /run/secrets/root_password missing or empty, skipping password change"; \
-    fi
+  if [ -f /run/secrets/root_password ] && [ -s /run/secrets/root_password ]; then \
+  echo "${NB_USER}:$(cat /run/secrets/root_password)" | chpasswd ; \
+  else \
+  echo "INFO: /run/secrets/root_password missing or empty, skipping password change"; \
+  fi
 
 USER jovyan
 

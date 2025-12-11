@@ -1,4 +1,4 @@
-from quay.io/jupyter/datascience-notebook:lab-4.2.1 as base
+FROM quay.io/jupyter/datascience-notebook:lab-4.2.1 AS base
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
