@@ -7,7 +7,6 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Locale + base deps for ROS repo
-# Locale + base deps for ROS repo
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
@@ -24,6 +23,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 ENV PIP_ROOT_USER_ACTION=ignore
+ENV QT_QPA_PLATFORM=xcb
 
 # Add ROS 2 Jazzy apt repo
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
@@ -72,9 +72,22 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     sudo \
     # ROS 2 Jazzy desktop + build helpers
     ros-jazzy-desktop \
+    ros-jazzy-rmw-cyclonedds-cpp \
     python3-colcon-common-extensions \
     python3-vcstool \
     python3-rosdep && \
+    # Install VS Code Desktop (official)
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/packages.microsoft.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    code \
+    terminator \
+    firefox \
+    vlc \
+    gedit \
+    thunar-archive-plugin \
+    evince && \
     # code-server (VS Code in browser)
     curl -fsSL https://code-server.dev/install.sh | sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -109,7 +122,8 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS environment for all future shells
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /etc/skel/.bashrc && \
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /etc/bash.bashrc && \
+    echo "source /opt/ros/jazzy/setup.bash" >> /etc/skel/.bashrc && \
     echo "source /opt/ros/jazzy/setup.bash" >> /home/${NB_USER}/.bashrc || true
 
 # Initialize rosdep (can be re-run by users if needed)
@@ -139,7 +153,8 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     black \
     isort \
     ruff \
-    notebook-intelligence && \
+    notebook-intelligence \
+    nb_conda_kernels && \
     npm cache clean --force && \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
@@ -177,6 +192,10 @@ RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
 RUN chown -R ${NB_USER}:users /home/${NB_USER}
+
+# Pre-init conda for NB_USER
+RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> /home/${NB_USER}/.bashrc && \
+    echo "conda activate base" >> /home/${NB_USER}/.bashrc
 
 # Install VS Code extensions
 RUN code-server --install-extension ms-python.python && \
