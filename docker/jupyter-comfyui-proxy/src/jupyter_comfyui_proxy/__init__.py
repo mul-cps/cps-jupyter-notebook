@@ -7,7 +7,7 @@ def setup_comfyui():
     Setup ComfyUI to be proxied through Jupyter Server Proxy
     """
     return {
-        'command': ['/home/jovyan/.local/bin/start-comfyui.sh'],
+        'command': ['/opt/comfyui/start-comfyui.sh'],
         'timeout': 30,
         'port': 8188,
         'absolute_url': False,
