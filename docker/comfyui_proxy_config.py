@@ -14,7 +14,7 @@ def setup_comfyui():
         'launcher_entry': {
             'enabled': True,
             'title': 'ComfyUI',
-            'icon_path': '/opt/comfyui/web/assets/favicon.ico',
+            'icon_path': '/etc/jupyter/comfyui.svg',
             'category': 'AI Tools'
         },
         'new_browser_tab': True,

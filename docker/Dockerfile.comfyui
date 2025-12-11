@@ -65,6 +65,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 USER root
 RUN mkdir -p /etc/jupyter
 COPY comfyui_proxy_config.py /etc/jupyter/jupyter_server_config.d/comfyui_proxy.py
+COPY comfyui.svg /etc/jupyter/comfyui.svg
 
 # Set proper permissions for ComfyUI directory
 RUN chown -R jovyan:users /opt/comfyui
