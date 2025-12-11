@@ -20,6 +20,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   libgomp1 \
   gh \
   nodejs \
+  npm \
   btop \
   openssh-server \
   && rm -rf /var/lib/apt/lists/*
