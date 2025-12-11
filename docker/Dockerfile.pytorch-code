@@ -56,10 +56,13 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     black \
     isort \
     ruff \
-    notebook-intelligence \
-    nb_conda_kernels && \
+    notebook-intelligence && \
     npm cache clean --force && \
     rm -rf /opt/conda/share/jupyter/lab/staging
+
+# Install nb_conda_kernels via conda
+RUN /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels && \
+    /opt/conda/bin/conda clean -afy
 
 # PyTorch GPU stack – separate pip call with CUDA 12.4 index
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
