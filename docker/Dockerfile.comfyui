@@ -66,6 +66,9 @@ COPY --chown=jovyan:users jupyter-comfyui-proxy /tmp/jupyter-comfyui-proxy
 RUN pip install /tmp/jupyter-comfyui-proxy && \
   rm -rf /tmp/jupyter-comfyui-proxy
 
+# Switch to root for permission changes and password setup
+USER root
+
 # Set proper permissions for ComfyUI directory
 RUN chown -R jovyan:users /opt/comfyui
 
