@@ -1,6 +1,6 @@
-"""
-Jupyter Server Proxy configuration for ComfyUI
-"""
+import os
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
 
 def setup_comfyui():
     """
@@ -14,13 +14,8 @@ def setup_comfyui():
         'launcher_entry': {
             'enabled': True,
             'title': 'ComfyUI',
-            'icon_path': '/etc/jupyter/comfyui.svg',
+            'icon_path': os.path.join(_HERE, 'icons/comfyui.svg'),
             'category': 'AI Tools'
         },
         'new_browser_tab': True,
     }
-
-# Register the server proxy
-c.ServerProxy.servers = {
-    'comfyui': setup_comfyui
-}

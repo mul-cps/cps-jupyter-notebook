@@ -61,11 +61,10 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git
 WORKDIR /opt/comfyui/custom_nodes/ComfyUI-Manager
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Create jupyter-server-proxy configuration for ComfyUI
-USER root
-RUN mkdir -p /etc/jupyter
-COPY comfyui_proxy_config.py /etc/jupyter/jupyter_server_config.d/comfyui_proxy.py
-COPY comfyui.svg /etc/jupyter/comfyui.svg
+# Install jupyter-comfyui-proxy
+COPY jupyter-comfyui-proxy /tmp/jupyter-comfyui-proxy
+RUN pip install /tmp/jupyter-comfyui-proxy && \
+  rm -rf /tmp/jupyter-comfyui-proxy
 
 # Set proper permissions for ComfyUI directory
 RUN chown -R jovyan:users /opt/comfyui
