@@ -158,7 +158,8 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # Install nb_conda_kernels via conda (pip version not compatible with py3.12 yet)
-RUN /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels && \
+RUN (mamba install -y -c conda-forge nb_conda_kernels || \
+    /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels) && \
     /opt/conda/bin/conda clean -afy
 
 # PyTorch GPU stack for robotics work

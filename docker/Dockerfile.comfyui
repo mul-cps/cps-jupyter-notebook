@@ -1,7 +1,7 @@
 # ComfyUI Jupyter Notebook Image
 # Based on the official Jupyter datascience-notebook with ComfyUI integration
 
-FROM quay.io/jupyter/pytorch-notebook:lab-4.2.1 AS base
+FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim AS base
 
 USER root
 
@@ -49,6 +49,9 @@ RUN pip install --upgrade --no-cache-dir \
 # Clone ComfyUI
 WORKDIR /opt/comfyui
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git .
+
+# Install PyTorch with CUDA support
+RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu124
 
 # Install ComfyUI dependencies
 RUN pip install --no-cache-dir -r requirements.txt

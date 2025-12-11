@@ -63,7 +63,8 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     rm -rf /opt/conda/share/jupyter/lab/staging
 
 # Install nb_conda_kernels via conda
-RUN /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels && \
+RUN (mamba install -y -c conda-forge nb_conda_kernels || \
+    /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels) && \
     /opt/conda/bin/conda clean -afy
 
 # TensorFlow GPU stack (no addons – they break on cp312)
