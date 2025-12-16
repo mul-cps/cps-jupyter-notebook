@@ -92,9 +92,10 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
 RUN    jupyter server extension enable --sys-prefix jupyter_remote_desktop_proxy || true && \
     jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
 
-# Copy permission fix script
+# Copy pre-notebook hooks
+COPY 00-prepare-readonly-home.sh /usr/local/bin/before-notebook.d/
 COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
-RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
+RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
 
 # IPython config
 RUN mkdir -p /root/.ipython/profile_default

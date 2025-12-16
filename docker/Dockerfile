@@ -56,9 +56,10 @@ RUN --mount=type=secret,id=root_password \
 
 RUN chown -R jovyan:users /home/jovyan
 
-# Copy permission fix script
+# Copy pre-notebook hooks
+COPY 00-prepare-readonly-home.sh /usr/local/bin/before-notebook.d/
 COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
-RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
+RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
 
 USER jovyan
 #ENV GIT_SSL_NO_VERIFY="false"

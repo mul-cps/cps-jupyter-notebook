@@ -237,28 +237,8 @@ RUN set -eux; \
             fi; \
         done
 
-# ---- Spawn-time GPU/EGL checks into singleuser container logs
-RUN set -eux; \
-        mkdir -p /usr/local/bin/before-notebook.d; \
-        cat > /usr/local/bin/before-notebook.d/10-gpu-checks.sh <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-echo "[gpu-check] NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-}"
-echo "[gpu-check] NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-}"
-if command -v nvidia-smi >/dev/null 2>&1; then
-    echo "[gpu-check] nvidia-smi -L:"
-    nvidia-smi -L || true
-else
-    echo "[gpu-check] nvidia-smi not found"
-fi
-if command -v vglrun >/dev/null 2>&1 && command -v glxinfo >/dev/null 2>&1; then
-    echo "[gpu-check] vglrun -d egl glxinfo -B:"
-    vglrun -d egl glxinfo -B | egrep "OpenGL vendor|OpenGL renderer|OpenGL version" || true
-else
-    echo "[gpu-check] vglrun/glxinfo missing"
-fi
-EOF
-RUN chmod +x /usr/local/bin/before-notebook.d/10-gpu-checks.sh
+# Ensure before-notebook.d directory exists
+RUN mkdir -p /usr/local/bin/before-notebook.d
 
 # Conda init for NB_USER
 RUN set -eux; \
@@ -329,8 +309,9 @@ ENV CODE_SERVER_EXTENSIONS_DIR=/opt/code-server-ext
 ENV CODE_SERVER_USER_DATA_DIR=/opt/code-server-data
 
 # Your existing scripts/configs
+COPY 00-prepare-readonly-home.sh /usr/local/bin/before-notebook.d/
 COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
-RUN chmod +x /usr/local/bin/before-notebook.d/fix-permissions.sh
+RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
 
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
