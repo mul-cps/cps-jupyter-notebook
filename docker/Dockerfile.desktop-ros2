@@ -169,7 +169,6 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
             isort \
             ruff \
             notebook-intelligence; \
-        npm cache clean --force; \
         rm -rf /opt/conda/share/jupyter/lab/staging
 
 # nb_conda_kernels via conda
