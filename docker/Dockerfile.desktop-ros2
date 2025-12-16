@@ -3,6 +3,9 @@
 # =========================
 FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim AS base
 
+# Toggle optional heavy GUI apps (saves CI disk if disabled)
+ARG INCLUDE_VSCODE_DESKTOP=0
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
@@ -92,21 +95,23 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
             python3-rosdep; \
         rm -rf /var/lib/apt/lists/*
 
-# ---- VS Code Desktop repo + install (keep if you really need GUI VSCode)
+# ---- VS Code Desktop repo + optional install (skipped by default to save space)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         --mount=type=cache,target=/var/lib/apt,sharing=locked \
         set -eux; \
         curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/packages.microsoft.gpg; \
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
             > /etc/apt/sources.list.d/vscode.list; \
-        apt-get update; \
-        apt-get install -y --no-install-recommends \
+        if [ "${INCLUDE_VSCODE_DESKTOP}" = "1" ]; then \
+          apt-get update; \
+          apt-get install -y --no-install-recommends \
             code \
             terminator \
             firefox \
             vlc \
             thunar-archive-plugin \
             evince; \
+        fi; \
         rm -rf /var/lib/apt/lists/*
 
 # ---- code-server (browser VSCode)
@@ -169,7 +174,7 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
             isort \
             ruff \
             notebook-intelligence; \
-        rm -rf /opt/conda/share/jupyter/lab/staging
+        rm -rf /opt/conda/share/jupyter/lab/staging /root/.cache /home/${NB_USER}/.cache || true
 
 # nb_conda_kernels via conda
 RUN set -eux; \
