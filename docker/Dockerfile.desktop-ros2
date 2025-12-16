@@ -223,17 +223,14 @@ if [[ ! -e /dev/nvidia0 && -z "${NVIDIA_VISIBLE_DEVICES:-}" ]]; then
 fi
 exec vglrun -d "${VGL_DISPLAY}" "$@"
 EOF
-        chmod +x /usr/local/bin/_vglwrap
+RUN chmod +x /usr/local/bin/_vglwrap
 
 # Optional shims for common apps (wrap only if present)
 RUN set -eux; \
         for app in glxinfo glxgears blender gazebo rviz; do \
             if command -v "$app" >/dev/null 2>&1; then \
                 real="$(command -v "$app")"; \
-                cat > "/usr/local/bin/$app" <<EOF2
-#!/usr/bin/env bash
-exec /usr/local/bin/_vglwrap "$real" "$@"
-EOF2
+                printf '%s\n' '#!/usr/bin/env bash' "exec /usr/local/bin/_vglwrap \"$real\" \"\$@\"" > "/usr/local/bin/$app"; \
                 chmod +x "/usr/local/bin/$app"; \
             fi; \
         done
@@ -259,7 +256,7 @@ else
     echo "[gpu-check] vglrun/glxinfo missing"
 fi
 EOF
-        chmod +x /usr/local/bin/before-notebook.d/10-gpu-checks.sh
+RUN chmod +x /usr/local/bin/before-notebook.d/10-gpu-checks.sh
 
 # Conda init for NB_USER
 RUN set -eux; \
