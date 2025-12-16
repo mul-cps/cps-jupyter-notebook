@@ -36,23 +36,21 @@ RUN set -eux; \
         $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
             > /etc/apt/sources.list.d/ros2.list
 
-# ---- VirtualGL apt repo (Ubuntu 24.04 needs upstream) + EGL/GL userland deps
+# ---- VirtualGL via .deb + EGL/GL userland deps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         --mount=type=cache,target=/var/lib/apt,sharing=locked \
         set -eux; \
-        mkdir -p /etc/apt/keyrings; \
-        curl -fsSL https://archive.turbovnc.org/pmwiki/uploads/VirtualGL/virtualgl.asc \
-            | gpg --dearmor -o /etc/apt/keyrings/virtualgl.gpg; \
-        echo "deb [signed-by=/etc/apt/keyrings/virtualgl.gpg] https://archive.turbovnc.org/virtualgl/apt stable main" \
-            > /etc/apt/sources.list.d/virtualgl.list; \
         apt-get update; \
         apt-get install -y --no-install-recommends \
-            virtualgl \
+            wget \
             mesa-utils \
             libglvnd0 libegl1 libgl1 \
             libx11-6 libxext6 libxrender1 libxrandr2 libxi6 libxfixes3 \
             libxdamage1 libxinerama1 libxcursor1 libxcomposite1 \
             libsm6 libice6 libglib2.0-0; \
+        wget -q -O /tmp/virtualgl.deb https://sourceforge.net/projects/virtualgl/files/3.1.1/virtualgl_3.1.1_amd64.deb/download; \
+        apt-get install -y /tmp/virtualgl.deb; \
+        rm -f /tmp/virtualgl.deb; \
         rm -rf /var/lib/apt/lists/*
 
 # ---- Desktop + noVNC + ROS + tooling
