@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Pre-notebook.d hook to prepare environment for read-only home mounts
 # This runs as root before the notebook server starts
-set -euo pipefail
+
 
 echo "[prepare-readonly-home] Starting read-only home preparation..."
 

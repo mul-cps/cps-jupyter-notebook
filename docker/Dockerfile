@@ -33,6 +33,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     jq \
     btop \
     openssh-server \
+    tmux \
     && curl -fsSL https://code-server.dev/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*
 
