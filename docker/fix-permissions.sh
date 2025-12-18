@@ -33,4 +33,4 @@ for dir in "/home/${NB_USER}/.config" "/home/${NB_USER}/work"; do
     fi
 done
 
-exit 0
+

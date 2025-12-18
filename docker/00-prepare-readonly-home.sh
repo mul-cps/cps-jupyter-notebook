@@ -31,4 +31,4 @@ for dir in "/home/${NB_USER}/.cache" "/run/user/$(id -u ${NB_USER} 2>/dev/null |
 done
 
 echo "[prepare-readonly-home] ✓ Read-only home preparation complete"
-exit 0
+
