@@ -1,4 +1,4 @@
-FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -39,11 +39,22 @@ RUN usermod -aG sudo "${NB_USER}"
 # Jupyter + UI + proxies (keep PyPI as default index!)
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     pip install --upgrade \
+    jupyterlab==4.5.7 \
     jupyterlab-git \
     nbgitpuller \
     jupyter-resource-usage \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
+    jupyterlab-topbar-text \
+    lckr-jupyterlab-variableinspector \
+    jupyterlab-image-editor \
+    jupyterlab-link-share \
+    jupyterlab-spreadsheet-editor \
+    jupyterlab-filesystem-access \
+    jupyter-archive \
+    jlab-enhanced-cell-toolbar \
+    jupyterlab-favorites \
+    jlab-enhanced-launcher \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
     git+https://github.com/bjoernellens1/jupyter-code-server \
@@ -65,13 +76,13 @@ RUN (mamba install -y -c conda-forge nb_conda_kernels || \
     /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels) && \
     /opt/conda/bin/conda clean -afy
 
-# PyTorch GPU stack – separate pip call with CUDA 12.4 index
+# PyTorch GPU stack – separate pip call with CUDA 12.9 index
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     pip install --upgrade \
-    "torch==2.4.*" \
-    "torchvision==0.19.*" \
-    "torchaudio==2.4.*" \
-    --index-url https://download.pytorch.org/whl/cu124
+    "torch==2.11.*" \
+    "torchvision==0.26.*" \
+    "torchaudio==2.11.*" \
+    --index-url https://download.pytorch.org/whl/cu129
 
 # Vision / ML tooling
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \

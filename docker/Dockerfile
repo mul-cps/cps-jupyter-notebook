@@ -1,14 +1,25 @@
-FROM quay.io/jupyter/datascience-notebook:lab-4.2.1 AS base
+FROM quay.io/jupyter/datascience-notebook:lab-4.5.7 AS base
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade \
+    jupyterlab==4.5.7 \
     jupyterlab-git \
     nbgitpuller \
     jupyter-resource-usage \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
+    jupyterlab-topbar-text \
+    lckr-jupyterlab-variableinspector \
+    jupyterlab-image-editor \
+    jupyterlab-link-share \
+    jupyterlab-spreadsheet-editor \
+    jupyterlab-filesystem-access \
+    jupyter-archive \
+    jlab-enhanced-cell-toolbar \
+    jupyterlab-favorites \
+    jlab-enhanced-launcher \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
     git+https://github.com/bjoernellens1/jupyter-code-server \

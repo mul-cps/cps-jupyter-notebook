@@ -1,4 +1,4 @@
-FROM docker.io/cschranz/gpu-jupyter:v1.9_cuda-12.6_ubuntu-24.04_slim
+FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -40,11 +40,22 @@ RUN usermod -aG sudo "${NB_USER}"
 # Jupyter + UI + code-server integration (PyPI index intact!)
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     pip install --upgrade \
+    jupyterlab==4.5.7 \
     jupyterlab-git \
     nbgitpuller \
     jupyter-resource-usage \
     catppuccin-jupyterlab \
     jupyterlab-horizon-theme \
+    jupyterlab-topbar-text \
+    lckr-jupyterlab-variableinspector \
+    jupyterlab-image-editor \
+    jupyterlab-link-share \
+    jupyterlab-spreadsheet-editor \
+    jupyterlab-filesystem-access \
+    jupyter-archive \
+    jlab-enhanced-cell-toolbar \
+    jupyterlab-favorites \
+    jlab-enhanced-launcher \
     jupyter-sshd-proxy \
     jupyter-server-proxy \
     git+https://github.com/bjoernellens1/jupyter-code-server \
@@ -67,10 +78,10 @@ RUN (mamba install -y -c conda-forge nb_conda_kernels || \
     /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels) && \
     /opt/conda/bin/conda clean -afy
 
-# TensorFlow GPU stack (no addons – they break on cp312)
+# TensorFlow GPU stack (no addons)
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     pip install --upgrade \
-    "tensorflow[and-cuda]==2.17.*" \
+    "tensorflow[and-cuda]==2.21.*" \
     tensorflow-datasets \
     keras \
     tf-keras \
