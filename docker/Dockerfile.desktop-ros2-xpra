@@ -1,0 +1,405 @@
+# =========================
+# Stage 0: base runtime
+# =========================
+FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim AS base
+
+# Toggle optional heavy GUI apps (saves CI disk if disabled)
+ARG INCLUDE_VSCODE_DESKTOP=0
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+USER root
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ---- Locale + base tooling (includes what we need for repos/keys)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,sharing=locked \
+        set -eux; \
+        rm -f /etc/apt/apt.conf.d/docker-clean; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends \
+            locales \
+            gnupg2 \
+            lsb-release \
+            curl \
+            ca-certificates; \
+        locale-gen en_US en_US.UTF-8; \
+        update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8; \
+        rm -rf /var/lib/apt/lists/*
+
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV PIP_ROOT_USER_ACTION=ignore
+ENV QT_QPA_PLATFORM=xcb
+
+# ---- ROS 2 Jazzy repo
+RUN set -eux; \
+        curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+            | tee /usr/share/keyrings/ros-archive-keyring.gpg >/dev/null; \
+        echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu \
+        $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
+            > /etc/apt/sources.list.d/ros2.list
+
+# ---- VirtualGL via .deb + EGL/GL userland deps
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,sharing=locked \
+        set -eux; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends \
+            wget \
+            mesa-utils \
+            libglvnd0 libegl1 libgl1 \
+            libx11-6 libxext6 libxrender1 libxrandr2 libxi6 libxfixes3 \
+            libxdamage1 libxinerama1 libxcursor1 libxcomposite1 \
+            libsm6 libice6 libglib2.0-0; \
+        wget -q -O /tmp/virtualgl.deb https://github.com/VirtualGL/virtualgl/releases/download/3.1.4/virtualgl_3.1.4_amd64.deb; \
+        apt-get install -y /tmp/virtualgl.deb; \
+        rm -f /tmp/virtualgl.deb; \
+        rm -rf /var/lib/apt/lists/*
+
+# ---- Xpra repo (official, matches Ubuntu Noble)
+# NOTE: replaces TurboVNC/noVNC/websockify from the sibling
+# Dockerfile.desktop-ros2 -- Xpra's own HTML5 client + bundled web
+# server removes the separate noVNC+websockify process pair entirely,
+# and gives native OS clipboard sync instead of a manual sync textbox.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,sharing=locked \
+        set -eux; \
+        wget -q -O /usr/share/keyrings/xpra.asc https://xpra.org/xpra.asc; \
+        echo "deb [signed-by=/usr/share/keyrings/xpra.asc] https://xpra.org/ noble main" \
+            > /etc/apt/sources.list.d/xpra.list; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends xpra xpra-x11 xpra-html5; \
+        rm -rf /var/lib/apt/lists/*
+
+# ---- Desktop + ROS + tooling + productivity apps
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,sharing=locked \
+        set -eux; \
+        apt-get update; \
+        apt-get install -y --no-install-recommends \
+            # Desktop stack
+            dbus-x11 \
+            xfce4 \
+            xfce4-terminal \
+            xubuntu-icon-theme \
+            supervisor \
+            pulseaudio \
+            # Productivity tools (kept deliberately lean -- no Base/Math,
+            # no full "libreoffice" meta-package)
+            libreoffice-writer \
+            libreoffice-calc \
+            libreoffice-impress \
+            libreoffice-draw \
+            libreoffice-gtk3 \
+            evince \
+            file-roller \
+            mousepad \
+            # Dev tools
+            git \
+            wget \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libopenblas-dev \
+            libomp-dev \
+            htop \
+            tmux \
+            openssh-client \
+            openssh-server \
+            sudo \
+            jq \
+            # ROS 2 Jazzy desktop + build helpers
+            ros-jazzy-desktop \
+            ros-jazzy-rmw-cyclonedds-cpp \
+            python3-colcon-common-extensions \
+            python3-vcstool \
+            python3-rosdep; \
+        rm -rf /var/lib/apt/lists/*
+
+# ---- VS Code Desktop repo + optional install (skipped by default to save space)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+        --mount=type=cache,target=/var/lib/apt,sharing=locked \
+        set -eux; \
+        curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/packages.microsoft.gpg; \
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+            > /etc/apt/sources.list.d/vscode.list; \
+        if [ "${INCLUDE_VSCODE_DESKTOP}" = "1" ]; then \
+          apt-get update; \
+          apt-get install -y --no-install-recommends \
+            code \
+            terminator \
+            firefox \
+            vlc \
+            thunar-archive-plugin \
+            evince; \
+        fi; \
+        rm -rf /var/lib/apt/lists/*
+
+# ---- code-server (browser VSCode)
+RUN set -eux; \
+        curl -fsSL https://code-server.dev/install.sh | sh
+
+# ---- ROS environment
+RUN set -eux; \
+        echo "source /opt/ros/jazzy/setup.bash" >> /etc/bash.bashrc; \
+        echo "source /opt/ros/jazzy/setup.bash" >> /etc/skel/.bashrc; \
+        echo "source /opt/ros/jazzy/setup.bash" >> /home/${NB_USER}/.bashrc || true
+
+RUN set -eux; \
+        rosdep init || true; \
+        rosdep update || true
+
+RUN usermod -aG sudo "${NB_USER}"
+
+# ---- Jupyter + remote-desktop + proxies
+# NOTE: jupyter_remote_desktop_proxy is VNC-specific and NOT used here --
+# the Xpra desktop is wired up via a c.ServerProxy.servers entry in the
+# cluster's jupyter_server_config.py (see the JupyterHub values.yaml in
+# cps-gpu-cluster / cit-teaching-platform), driving `xpra start` directly.
+# jupyter_server_proxy itself is still required as the mechanism that
+# entry uses.
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+        set -eux; \
+        pip install --upgrade \
+            jupyterlab==4.5.7 \
+            jupyter-server-proxy \
+            jupyterlab-git \
+            nbgitpuller \
+            jupyter-resource-usage \
+            catppuccin-jupyterlab \
+            jupyterlab-horizon-theme \
+            jupyterlab-topbar-text \
+            lckr-jupyterlab-variableinspector \
+            jupyterlab-image-editor \
+            jupyterlab-link-share \
+            jupyterlab-spreadsheet-editor \
+            jupyterlab-filesystem-access \
+            jupyter-archive \
+            jlab-enhanced-cell-toolbar \
+            jupyterlab-favorites \
+            jlab-enhanced-launcher \
+            jupyter-sshd-proxy \
+            git+https://github.com/bjoernellens1/jupyter-code-server \
+            jupyter-glances-proxy \
+            git-credential-helpers \
+            jupyterlab-nvdashboard \
+            ipywidgets \
+            jupyterlab-lsp \
+            "python-lsp-server[all]" \
+            black \
+            isort \
+            ruff \
+            notebook-intelligence; \
+        rm -rf /opt/conda/share/jupyter/lab/staging /root/.cache /home/${NB_USER}/.cache || true
+
+# nb_conda_kernels via conda
+RUN set -eux; \
+        (mamba install -y -c conda-forge nb_conda_kernels || \
+            /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels); \
+        /opt/conda/bin/conda clean -afy
+
+# PyTorch GPU stack
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+        set -eux; \
+        pip install --upgrade \
+            "torch==2.11.*" \
+            "torchvision==0.26.*" \
+            "torchaudio==2.11.*" \
+            --index-url https://download.pytorch.org/whl/cu129; \
+        pip install --upgrade \
+            transformers \
+            datasets \
+            accelerate \
+            lightning \
+            timm \
+            opencv-python-headless \
+            scikit-image \
+            scikit-learn \
+            pandas \
+            matplotlib \
+            seaborn
+
+# Enable server extensions
+RUN set -eux; \
+        jupyter server extension enable --sys-prefix jupyter_server_proxy || true; \
+        jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
+
+# ---- Auto-wrap VirtualGL EGL (users don't have to type vglrun)
+RUN set -eux; \
+        cat > /usr/local/bin/_vglwrap <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+# No GUI session => do nothing special
+if [[ -z "${DISPLAY:-}" ]]; then
+    exec "$@"
+fi
+export VGL_DISPLAY="${VGL_DISPLAY:-egl}"
+# No GPU visible => run normally
+if [[ ! -e /dev/nvidia0 && -z "${NVIDIA_VISIBLE_DEVICES:-}" ]]; then
+    exec "$@"
+fi
+exec vglrun -d "${VGL_DISPLAY}" "$@"
+EOF
+RUN chmod +x /usr/local/bin/_vglwrap
+
+# Optional shims for common apps (wrap only if present)
+#
+# Two real bugs found live (2026-07-24) with this mechanism as it existed
+# in the sibling Dockerfile.desktop-ros2 (including its "fix" in PR #24):
+#
+# 1. ROS binaries (rviz2, rqt, ...) are NOT on PATH in a plain non-login
+#    shell -- setup.bash is only sourced via .bashrc for interactive
+#    shells -- so `command -v rviz2` silently failed here and no wrapper
+#    was ever created for any ROS binary.
+# 2. Even fixed, a same-named wrapper dropped in /usr/local/bin would
+#    still lose to the real unwrapped binary: ROS's setup.bash PREPENDS
+#    /opt/ros/jazzy/bin to PATH (confirmed: `source setup.bash; echo
+#    $PATH` puts /opt/ros/jazzy/bin first), so any interactive shell
+#    that sources it (i.e. every real user shell, since .bashrc does
+#    this) would find the real rviz2/rqt binary before our wrapper,
+#    silently defeating it regardless of bug #1.
+#
+# Fixed by sourcing setup.bash before the `command -v` check, AND by
+# replacing the binary IN PLACE at its own resolved path (renamed to
+# "<name>.real") instead of adding a same-named file elsewhere on PATH
+# -- this is immune to PATH ordering entirely.
+# NOTE: no `-u` (nounset) here -- ROS's setup.bash references at least
+# one variable (AMENT_TRACE_SETUP_FILES) without a default, which trips
+# `set -u` immediately.
+RUN set -ex; \
+        . /opt/ros/jazzy/setup.bash; \
+        for app in glxinfo glxgears blender gazebo rviz rviz2 rqt; do \
+            if command -v "$app" >/dev/null 2>&1; then \
+                real="$(command -v "$app")"; \
+                mv "$real" "${real}.real"; \
+                printf '%s\n' '#!/usr/bin/env bash' "exec /usr/local/bin/_vglwrap \"${real}.real\" \"\$@\"" > "$real"; \
+                chmod +x "$real"; \
+            fi; \
+        done
+
+# ---- Xpra desktop startup script
+# xpra's own `start` command launches the X11 backend (Xvfb-based,
+# dummy driver -- no relation to Xvnc, no GLX-vs-driver segfault class
+# of bug like the TurboVNC stack hit) then execs this as the session
+# command. GPU-accelerated apps still go through the same _vglwrap
+# wrapper as the TurboVNC profile -- VirtualGL's EGL backend renders on
+# the real GPU and hands frames to whichever 2D display is active,
+# independent of whether that display is Xvnc or Xpra's Xvfb.
+RUN set -eux; \
+        cat > /usr/local/bin/start-xpra-desktop.sh <<'EOF'
+#!/bin/sh
+# xfce4-panel and xfwm4 persist window/panel geometry (absolute pixel
+# coordinates) to xfconf in the user's home directory, which is a
+# persistent per-user PVC that outlives any single session. Since this
+# is a remote desktop whose viewport size is renegotiated fresh every
+# time (different browser window, different monitor, Xpra's dynamic
+# resize), geometry saved from one session is never guaranteed valid
+# for the next -- confirmed live, 2026-07-24: taskbar/menus visible
+# correctly on load, then drifting off-screen once xfwm4/xfce4-panel
+# applied stale saved geometry. Clearing these two files before every
+# session start means the panel/window manager always initialize fresh
+# against the CURRENT screen size instead of carrying forward
+# potentially-mismatched state.
+rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml"
+exec dbus-launch --exit-with-session xfce4-session
+EOF
+RUN chmod +x /usr/local/bin/start-xpra-desktop.sh
+
+# Ensure before-notebook.d directory exists
+RUN mkdir -p /usr/local/bin/before-notebook.d
+
+# Conda init for NB_USER
+RUN set -eux; \
+        echo ". /opt/conda/etc/profile.d/conda.sh" >> /home/${NB_USER}/.bashrc; \
+        echo "conda activate base" >> /home/${NB_USER}/.bashrc; \
+        chown -R ${NB_USER}:users /home/${NB_USER}
+
+WORKDIR /home/${NB_USER}/work
+
+
+# =========================
+# Stage 1: code-server extensions (build once, copy artifacts)
+# =========================
+FROM base AS extensions
+
+USER root
+# Ensure extension dirs exist and are writable
+RUN set -eux; \
+        mkdir -p /opt/code-server-ext /opt/code-server-data; \
+        chown -R ${NB_USER}:users /opt/code-server-ext /opt/code-server-data
+
+USER ${NB_USER}
+
+# Install extensions into a neutral, copyable location
+RUN set -eux; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension ms-python.python; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension ms-toolsai.jupyter; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension charliermarsh.ruff; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension tamasfe.even-better-toml; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension redhat.vscode-yaml; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension ms-azuretools.vscode-docker; \
+        code-server \
+            --user-data-dir /opt/code-server-data \
+            --extensions-dir /opt/code-server-ext \
+            --install-extension mhutchie.git-graph
+
+
+# =========================
+# Stage 2: final image (copy extension cache in)
+# =========================
+FROM base AS final
+
+USER root
+# Copy preinstalled code-server extensions
+COPY --from=extensions /opt/code-server-ext /opt/code-server-ext
+COPY --from=extensions /opt/code-server-data /opt/code-server-data
+
+# Make code-server use the shared extension dir by default
+ENV CODE_SERVER_EXTENSIONS_DIR=/opt/code-server-ext
+ENV CODE_SERVER_USER_DATA_DIR=/opt/code-server-data
+
+# Your existing scripts/configs
+COPY 00-prepare-readonly-home.sh /usr/local/bin/before-notebook.d/
+COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
+RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
+
+RUN mkdir -p /root/.ipython/profile_default
+COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
+
+# Copilot installer (kept as you had it)
+USER ${NB_USER}
+COPY --chown=${NB_USER}:users install-copilot.sh /tmp/install-copilot.sh
+RUN chmod +x /tmp/install-copilot.sh && /tmp/install-copilot.sh && rm /tmp/install-copilot.sh
+
+USER root
+# Default VirtualGL backend to EGL for all users/shells
+RUN set -eux; \
+    cat > /etc/profile.d/10-virtualgl-egl.sh <<'EOF'
+# Default VirtualGL backend (no Xorg :0 needed)
+export VGL_DISPLAY=${VGL_DISPLAY:-egl}
+EOF
+
+# Also set for non-login shells (global bashrc)
+RUN set -eux; \
+    echo 'export VGL_DISPLAY=${VGL_DISPLAY:-egl}' >> /etc/bash.bashrc
+WORKDIR /home/${NB_USER}/work
