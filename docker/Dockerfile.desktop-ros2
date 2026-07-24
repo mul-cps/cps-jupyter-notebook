@@ -257,8 +257,14 @@ EOF
 RUN chmod +x /usr/local/bin/_vglwrap
 
 # Optional shims for common apps (wrap only if present)
+# rviz2 (not "rviz" -- that's the ROS1 binary name; this image is ROS 2
+# Jazzy only) was missing here, so it ran unwrapped straight against
+# Xvnc's display -- and since Xvnc's own GLX extension is intentionally
+# disabled (see the Xvnc shim above), it failed immediately with
+# `Xlib: extension "GLX" missing on display` instead of getting routed
+# through VirtualGL's EGL backend (confirmed live, 2026-07-24).
 RUN set -eux; \
-        for app in glxinfo glxgears blender gazebo rviz; do \
+        for app in glxinfo glxgears blender gazebo rviz rviz2 rqt; do \
             if command -v "$app" >/dev/null 2>&1; then \
                 real="$(command -v "$app")"; \
                 printf '%s\n' '#!/usr/bin/env bash' "exec /usr/local/bin/_vglwrap \"$real\" \"\$@\"" > "/usr/local/bin/$app"; \
