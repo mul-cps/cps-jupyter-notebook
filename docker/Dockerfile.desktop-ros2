@@ -131,8 +131,26 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         ln -sf /opt/TurboVNC/bin/vncpasswd /usr/local/bin/vncpasswd; \
         ln -sf /opt/TurboVNC/bin/vncconnect /usr/local/bin/vncconnect; \
         ln -sf /opt/TurboVNC/bin/tvncconfig /usr/local/bin/tvncconfig; \
-        # Simple Xvnc shim (no forced GLX; EGL path doesn't need it)
-        printf '%s\n' '#!/bin/sh' 'exec /opt/TurboVNC/bin/Xvnc "$@"' > /usr/local/bin/Xvnc; \
+        # TurboVNC's vncserver script resolves its "webserver" helper
+        # relative to how IT was invoked ($0), not the symlink target --
+        # since jupyter-remote-desktop-proxy invokes it via this
+        # /usr/local/bin/vncserver symlink, it looks for a sibling
+        # /usr/local/bin/webserver. Without this symlink vncserver aborts
+        # immediately with `couldn't find "/usr/local/bin/webserver"` and
+        # Xvnc never starts at all (confirmed live, 2026-07-24).
+        ln -sf /opt/TurboVNC/bin/webserver /usr/local/bin/webserver; \
+        # Simple Xvnc shim: explicitly disable Xvnc's own built-in GLX
+        # extension. This was already the intent (see comment below) but
+        # was never actually implemented -- Xvnc initialized GLX anyway
+        # and segfaulted during extension init on this driver/environment
+        # (confirmed live, 2026-07-24: `Initializing extension GLX` ->
+        # `Segmentation fault`, every launch, before any client could
+        # connect). GPU acceleration doesn't need Xvnc's GLX here: apps
+        # get it via VirtualGL's EGL backend (_vglwrap /
+        # VGL_DISPLAY=egl below), which talks to the GPU directly and
+        # works fine under an MPS-sliced allocation -- it's independent
+        # of whatever the 2D VNC X server's own GLX support is.
+        printf '%s\n' '#!/bin/sh' 'exec /opt/TurboVNC/bin/Xvnc "$@" -extension GLX' > /usr/local/bin/Xvnc; \
         chmod +x /usr/local/bin/Xvnc; \
         # If tigervnc sneaks in via deps, remove it
         apt-get remove -y tigervnc-standalone-server || true; \
