@@ -32,6 +32,7 @@ jobs:
             pytorch_code: docker/Dockerfile.pytorch-code
             tf_code: docker/Dockerfile.tf-code
             desktop_ros2: docker/Dockerfile.desktop-ros2
+            desktop_ros2_xpra: docker/Dockerfile.desktop-ros2-xpra
             comfyui: docker/Dockerfile.comfyui
             standard_cpu: docker/Dockerfile
             common:
@@ -60,6 +61,7 @@ jobs:
             add_variant "pytorch-code" "docker/Dockerfile.pytorch-code" "pytorch-code"
             add_variant "tf-code" "docker/Dockerfile.tf-code" "tf-code"
             add_variant "desktop-ros2" "docker/Dockerfile.desktop-ros2" "desktop-ros2"
+            add_variant "desktop-ros2-xpra" "docker/Dockerfile.desktop-ros2-xpra" "desktop-ros2-xpra"
             add_variant "comfyui" "docker/Dockerfile.comfyui" "comfyui"
             add_variant "standard-cpu" "docker/Dockerfile" "standard-cpu"
           else
@@ -72,6 +74,9 @@ jobs:
             fi
             if [ "${{ steps.changes.outputs.desktop_ros2 }}" == "true" ]; then
               add_variant "desktop-ros2" "docker/Dockerfile.desktop-ros2" "desktop-ros2"
+            fi
+            if [ "${{ steps.changes.outputs.desktop_ros2_xpra }}" == "true" ]; then
+              add_variant "desktop-ros2-xpra" "docker/Dockerfile.desktop-ros2-xpra" "desktop-ros2-xpra"
             fi
             if [ "${{ steps.changes.outputs.comfyui }}" == "true" ]; then
               add_variant "comfyui" "docker/Dockerfile.comfyui" "comfyui"
