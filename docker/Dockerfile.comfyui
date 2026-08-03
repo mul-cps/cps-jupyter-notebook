@@ -5,7 +5,8 @@
 # code-server bundle) instead of reinstalling PyTorch and the shared
 # bundle from scratch. See
 # docs/superpowers/plans/2026-08-03-consolidate-images.md.
-FROM ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code AS base
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code
+FROM ${BASE_IMAGE} AS base
 
 USER root
 

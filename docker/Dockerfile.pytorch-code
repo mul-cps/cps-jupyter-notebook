@@ -3,7 +3,8 @@
 # Adds the PyTorch GPU stack on top of the shared base-gpu image. See
 # docker/Dockerfile.base-gpu and
 # docs/superpowers/plans/2026-08-03-consolidate-images.md.
-FROM ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu:latest
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu:latest
+FROM ${BASE_IMAGE}
 
 USER root
 

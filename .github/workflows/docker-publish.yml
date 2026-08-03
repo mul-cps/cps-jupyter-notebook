@@ -136,6 +136,8 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-base-gpu:${{ github.ref_name }}
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
@@ -163,12 +165,15 @@ jobs:
           - name: standard-cpu
             dockerfile: docker/Dockerfile
             suffix: standard-cpu
+            base_image: cps-jupyter-notebook-base-cpu:${{ github.ref_name }}
           - name: desktop-ros2
             dockerfile: docker/Dockerfile.desktop-ros2
             suffix: desktop-ros2
+            base_image: cps-jupyter-notebook:${{ github.ref_name }}-pytorch-code
           - name: comfyui
             dockerfile: docker/Dockerfile.comfyui
             suffix: comfyui
+            base_image: cps-jupyter-notebook:${{ github.ref_name }}-pytorch-code
     steps:
       - uses: actions/checkout@v4
       - name: Free up disk space on runner
@@ -213,6 +218,8 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ matrix.base_image }}
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
