@@ -49,7 +49,22 @@ def check_from_lines(path, expected_base):
         errors.append(f"{path.name}: no FROM line found at all")
         return
     first = from_lines[0]
-    if first != expected_base:
+
+    # If expected_base has no tag (no ':' in the last path segment after '/'),
+    # strip any tag from first before comparing. This allows e.g.
+    # 'ghcr.io/mul-cps/cps-jupyter-notebook-base-cpu:latest' to match
+    # an expectation of 'ghcr.io/mul-cps/cps-jupyter-notebook-base-cpu'.
+    # If expected_base DOES include a tag (e.g. 'latest-pytorch-code'),
+    # require exact matching (both sides already have tags).
+    last_segment_expected = expected_base.rsplit("/", 1)[-1]
+    if ":" not in last_segment_expected:
+        # expected_base has no tag, so strip tag from first before comparing
+        first_to_compare = first.rsplit(":", 1)[0] if ":" in first else first
+    else:
+        # expected_base has a tag, so require exact match
+        first_to_compare = first
+
+    if first_to_compare != expected_base:
         errors.append(
             f"{path.name}: first FROM is {first!r}, expected {expected_base!r} "
             f"(consolidation base)"
