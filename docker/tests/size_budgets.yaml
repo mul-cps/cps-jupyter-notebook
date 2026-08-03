@@ -1,0 +1,25 @@
+# docker/tests/size_budgets.yaml
+#
+# Maximum acceptable compressed image size (bytes) per variant, used by
+# a later task to flag size regressions once real post-refactor images
+# are built via CI. Baseline max_bytes values below are set from the
+# CURRENT (pre-refactor) live-observed sizes documented in
+# docs/superpowers/specs/2026-07-24-spegel-image-mirroring-design.md
+# (pytorch-code ~17.6GB observed live; desktop-ros2-xpra ~19-37GB
+# observed live) plus a 10% margin -- NOT aspirational targets. The
+# post-refactor verification task should report actual sizes achieved
+# and by how much they beat these baselines, not just pass/fail.
+standard-cpu:
+  max_bytes: 6000000000      # 6 GB margin; not directly measured yet
+base-cpu:
+  max_bytes: 6000000000
+base-gpu:
+  max_bytes: 12000000000     # 12 GB margin; not directly measured yet
+pytorch-code:
+  max_bytes: 19500000000     # ~17.6GB observed + ~10%
+tf-code:
+  max_bytes: 19500000000     # assumed similar order of magnitude to pytorch-code
+desktop-ros2:
+  max_bytes: 41000000000     # ~37GB observed (xpra variant) + margin; desktop-ros2 itself not separately measured
+comfyui:
+  max_bytes: 19500000000     # assumed similar order of magnitude to pytorch-code (adds ComfyUI source + deps on top of torch)
