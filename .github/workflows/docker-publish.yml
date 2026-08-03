@@ -127,6 +127,14 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+      - name: Determine BASE_IMAGE build-arg
+        id: base_image_arg
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-base-gpu:${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -137,7 +145,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-base-gpu:${{ github.ref_name }}
+            ${{ steps.base_image_arg.outputs.value }}
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
@@ -209,6 +217,14 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+      - name: Determine BASE_IMAGE build-arg
+        id: base_image_arg
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ matrix.base_image }}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -219,7 +235,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ matrix.base_image }}
+            ${{ steps.base_image_arg.outputs.value }}
           secrets: |
             "admin_password=${{ secrets.CPS_JUPYTER_ADMIN_PASSWORD }}"
             "root_password=${{ secrets.CPS_JUPYTER_ROOT_PASSWORD }}"
