@@ -9,6 +9,10 @@ on:
     paths:
       - 'docker/**'
       - '.github/workflows/docker-publish.yml'
+  # NOTE: PR builds don't push (see `push:` conditions below), so dependent
+  # jobs (build-gpu-frameworks/build-dependents) build against the already
+  # published base images, not this PR's own base changes -- a build-only
+  # smoke gate, not a fully hermetic build.
   pull_request:
     branches: [ main ]
     paths:

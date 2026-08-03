@@ -14,7 +14,7 @@ standard-cpu:
 base-cpu:
   max_bytes: 6000000000
 base-gpu:
-  max_bytes: 12000000000     # 12 GB margin; not directly measured yet
+  max_bytes: 15000000000     # 15 GB; real compressed size measured at 13.82GB via skopeo inspect (Task 9 battle test), with headroom
 pytorch-code:
   max_bytes: 19500000000     # ~17.6GB observed + ~10%
 tf-code:

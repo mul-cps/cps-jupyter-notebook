@@ -50,6 +50,24 @@ def check_from_lines(path, expected_base):
         return
     first = from_lines[0]
 
+    # If the FROM line references a build ARG (e.g. `${BASE_IMAGE}` or
+    # `$BASE_IMAGE`), resolve it to that ARG's default value by looking
+    # for a preceding `ARG <NAME>=<value>` line, and compare that value
+    # instead of the raw `${...}` token.
+    var_match = re.match(r"^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$", first)
+    if var_match:
+        var_name = var_match.group(1)
+        arg_match = re.search(
+            rf"^ARG\s+{re.escape(var_name)}=(\S+)", text, re.MULTILINE
+        )
+        if not arg_match:
+            errors.append(
+                f"{path.name}: first FROM references ${{{var_name}}} but no "
+                f"'ARG {var_name}=<value>' default was found in the file"
+            )
+            return
+        first = arg_match.group(1)
+
     # If expected_base has no tag (no ':' in the last path segment after '/'),
     # strip any tag from first before comparing. This allows e.g.
     # 'ghcr.io/mul-cps/cps-jupyter-notebook-base-cpu:latest' to match
