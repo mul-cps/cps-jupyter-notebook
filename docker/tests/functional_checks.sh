@@ -42,7 +42,7 @@ check_contains() {
 
 # ---- Checks that apply to EVERY variant ----
 check_cmd "jupyter-lab is importable" python3 -c "import jupyterlab"
-check_cmd "jupyterlab_git installed" python3 -c "import jupyterlab_git" 2>/dev/null || check_cmd "jupyterlab-git pip-listed" sh -c "pip show jupyterlab-git"
+check_cmd "jupyterlab_git installed" python3 -c "import jupyterlab_git"
 check_cmd "code-server binary present" sh -c "command -v code-server"
 check_contains "code-server has ms-python.python extension" code-server --list-extensions -- "ms-python.python"
 check_contains "code-server has ms-toolsai.jupyter extension" code-server --list-extensions -- "ms-toolsai.jupyter"

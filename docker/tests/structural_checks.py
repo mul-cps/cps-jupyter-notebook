@@ -74,7 +74,7 @@ def check_pip_cache_mount_present(path):
     cache-to: type=gha to be effective)."""
     text = path.read_text()
     for i, line in enumerate(text.splitlines(), start=1):
-        if re.match(r"\s*pip install", line):
+        if re.search(r"(^|\s)pip install\b", line):
             # look backwards up to 5 lines for the cache mount on the
             # same RUN statement
             window = "\n".join(text.splitlines()[max(0, i - 6):i])
