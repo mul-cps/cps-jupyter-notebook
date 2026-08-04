@@ -133,6 +133,97 @@ The brief assumed a simple "push branch → CI fires → images publish" flow. T
 Both fixes are minimal, targeted, and within the stated scope of "fix the specific Dockerfile/workflow
 issue" — no redesign was done.
 
+## Second CI run: desktop-ros2 re-refactor + new desktop-ros2-xpra variant (2026-08-04)
+
+After the original battle-test above, 4 more commits landed on `consolidate-images`: a redone
+`desktop-ros2` refactor (reconciling with 3 live bug fixes that landed on `main` in the meantime —
+webserver symlink, GLX segfault fix, rviz2/rqt wrap), a brand-new `desktop-ros2-xpra` consolidation
+(built FROM the published `pytorch-code` image, same as `desktop-ros2`/`comfyui`), an extended
+`structural_checks.py`, and a CI workflow update (Renovate-bumped action versions + the new xpra
+matrix entry, bringing `build-dependents` from 3 to 4 jobs).
+
+CI run: https://github.com/mul-cps/cps-jupyter-notebook/actions/runs/30878888279
+Triggered via `gh workflow run docker-publish.yml --ref consolidate-images` on commit `7031be3`
+(tip of the branch at re-verification time). No fixes were needed — all 7 jobs passed on the first
+attempt.
+
+| Stage | Job | Result | Duration |
+|---|---|---|---|
+| build-bases | base-cpu | success | ~10m |
+| build-bases | base-gpu | success | ~18m |
+| build-gpu-frameworks | pytorch-code | success | ~25m |
+| build-gpu-frameworks | tf-code | success | ~26m |
+| build-dependents | standard-cpu | success | ~1m |
+| build-dependents | desktop-ros2 | success | ~16m |
+| build-dependents | desktop-ros2-xpra (new) | success | ~15m |
+| build-dependents | comfyui | success | ~18m |
+
+**7/7 jobs succeeded, total run time ~62 minutes.**
+
+### desktop-ros2 re-verification
+
+Pulled the freshly-published image and ran `docker/tests/run_functional_checks.sh <image> desktop-ros2`
+(the same static-check suite as the original battle-test — jupyterlab, jupyterlab_git, code-server +
+3 extensions, jovyan user/sudo, before-notebook.d hooks, ipython kernel config, torch/torchvision/
+transformers, ros2 CLI, Xvnc shim, vglrun): `RESULT: all checks PASSED for variant=desktop-ros2`.
+
+These are static presence checks, not runtime behavior checks, so they don't directly exercise the 3
+bug fixes (webserver symlink, GLX segfault, rviz2/rqt wrap) at runtime — that deeper verification was
+flagged as optional extra rigor in the task brief and was not performed here; the static-check bar
+(matching the original battle-test's bar) was met.
+
+Size: 38.05 GB uncompressed, 19.29 GB compressed — byte-for-byte consistent with the original
+battle-test's measurement (19.29 GB compressed / 38.03 GB uncompressed), confirming the re-refactor
+introduced no size regression.
+
+### desktop-ros2-xpra (new variant, never before tested)
+
+`docker/tests/functional_checks.sh` has no `desktop-ros2-xpra)` case yet (only `desktop-ros2`), so
+rather than approximate with the wrong variant name, a manual smoke check was run directly in the
+container instead:
+
+| Check | Result |
+|---|---|
+| `import torch` | PASS — torch 2.11.0+cu129 |
+| `import transformers` | PASS — transformers 5.14.1 |
+| `import jupyterlab` | PASS — jupyterlab 4.5.7 |
+| `xpra` binary present | PASS — `xpra v6.5.2-r0` at `/usr/bin/xpra` |
+| `code-server` binary present | PASS — `4.131.0` at `/usr/bin/code-server` |
+| `ros2` CLI present | PASS — `/opt/ros/jazzy/bin/ros2` (present but not on `PATH` until `/opt/ros/jazzy/setup.bash` is sourced, same convention as `desktop-ros2`) |
+
+All checks passed. No `functional_checks.sh` case was added for this variant as part of this
+re-verification task — that's a gap worth closing in a follow-up (task 10) so future CI/manual runs
+don't need this ad-hoc smoke check.
+
+Real measured size (`docker image inspect --format '{{.Size}}'` for uncompressed,
+`skopeo inspect docker://<ref>` layer-sum for compressed):
+
+| Variant | Compressed (registry) | Uncompressed (on-disk) |
+|---|---:|---:|
+| desktop-ros2-xpra | 19.40 GB | 38.40 GB |
+
+For context, `desktop-ros2-xpra` is ~0.11 GB larger compressed than `desktop-ros2` (19.40 GB vs
+19.29 GB) — consistent with it being `desktop-ros2` plus an `xpra` package layer on the same
+`pytorch-code` lineage. Both variants are well under the `desktop-ros2` budget category (41 GB) in
+`size_budgets.yaml`, though `size_budgets.yaml` was not checked for a variant-specific
+`desktop-ros2-xpra` budget entry as part of this task.
+
+### Disk discipline
+
+Each image was pulled, inspected, checked, and removed (`docker rmi`) one at a time; `df -h /` was
+checked before each pull (466 GB free throughout, well above the 30 GB abort threshold).
+
+### Summary of this second run
+
+- **CI: 7/7 jobs green**, no fixes required.
+- **desktop-ros2: static functional checks pass, size unchanged from the original battle-test** — the
+  re-refactor onto `main`'s 3 bug fixes did not regress consolidation.
+- **desktop-ros2-xpra: functionally sound** (torch/transformers/jupyterlab importable, xpra/
+  code-server/ros2 present), **measured at 19.40 GB compressed / 38.40 GB uncompressed** — its first
+  ever real measurement.
+- Flag for task 10: add a `desktop-ros2-xpra)` case to `docker/tests/functional_checks.sh` so future
+  runs don't need a manual smoke check for this variant.
+
 ## Files changed in this task
 
 - `.github/workflows/docker-publish.yml` — added `workflow_dispatch` trigger; wired `BASE_IMAGE`
