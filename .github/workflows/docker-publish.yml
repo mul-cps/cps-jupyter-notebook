@@ -34,7 +34,7 @@ jobs:
       matrix:
         base: [base-cpu, base-gpu]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Free up disk space on runner
         run: |
           echo "Initial disk usage:"; df -h
@@ -49,16 +49,16 @@ jobs:
           docker system prune -af || true
           docker builder prune -af || true
           echo "Disk usage after cleanup:"; df -h
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-${{ matrix.base }}
@@ -71,7 +71,7 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./docker
           file: docker/Dockerfile.${{ matrix.base }}
@@ -97,7 +97,7 @@ jobs:
       matrix:
         variant: [pytorch-code, tf-code]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Free up disk space on runner
         run: |
           sudo rm -rf /usr/local/lib/android || true
@@ -110,16 +110,16 @@ jobs:
           sudo rm -f /mnt/swapfile
           docker system prune -af || true
           docker builder prune -af || true
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
@@ -140,7 +140,7 @@ jobs:
             echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-base-gpu:${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           fi
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./docker
           file: docker/Dockerfile.${{ matrix.variant }}
@@ -186,8 +186,12 @@ jobs:
             dockerfile: docker/Dockerfile.comfyui
             suffix: comfyui
             base_image: cps-jupyter-notebook:${{ github.ref_name }}-pytorch-code
+          - name: desktop-ros2-xpra
+            dockerfile: docker/Dockerfile.desktop-ros2-xpra
+            suffix: desktop-ros2-xpra
+            base_image: cps-jupyter-notebook:${{ github.ref_name }}-pytorch-code
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Free up disk space on runner
         run: |
           sudo rm -rf /usr/local/lib/android || true
@@ -200,16 +204,16 @@ jobs:
           sudo rm -f /mnt/swapfile
           docker system prune -af || true
           docker builder prune -af || true
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
@@ -230,7 +234,7 @@ jobs:
             echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ matrix.base_image }}" >> "$GITHUB_OUTPUT"
           fi
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./docker
           file: ${{ matrix.dockerfile }}
