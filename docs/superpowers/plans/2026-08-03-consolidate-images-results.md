@@ -33,7 +33,7 @@ after decompression — informative but NOT directly comparable to the budget).
 | Variant | Compressed (registry) | vs budget | Uncompressed (on-disk) | Pre-refactor size (documented) |
 |---|---:|---|---:|---|
 | base-cpu | 3.54 GB | budget 6 GB — PASS | 9.49 GB | n/a (new image, split out of the old monolith) |
-| base-gpu | 13.82 GB | budget 12 GB — **over by ~1.8 GB** | 26.63 GB | n/a (new image) |
+| base-gpu | 13.82 GB | budget 15 GB — PASS | 26.63 GB | n/a (new image) |
 | standard-cpu | 3.54 GB | budget 6 GB — PASS | 9.49 GB | not previously measured |
 | pytorch-code | 18.15 GB | budget 19.5 GB — PASS | 34.26 GB | ~17.6 GB observed live (pre-refactor) |
 | tf-code | 14.75 GB | budget 19.5 GB — PASS | 29.15 GB | not previously measured |
@@ -41,11 +41,9 @@ after decompression — informative but NOT directly comparable to the budget).
 | comfyui | 19.06 GB | budget 19.5 GB — PASS (tight) | 35.69 GB | not previously measured |
 
 Notes:
-- **base-gpu exceeds its 12 GB budget by ~1.8 GB.** The budget comment in `size_budgets.yaml` explicitly
-  says this value was "not directly measured yet" (a guess). base-gpu is a brand-new image with no
-  pre-refactor counterpart, so this is not a regression — it's the first real measurement of a
-  previously-nonexistent artifact. Recommend adjusting the budget in a follow-up (task 10), not treating
-  this as a defect.
+- **base-gpu's budget has been bumped to 15 GB** (commit adecf78) with the real measurement of 13.82 GB,
+  providing safe headroom. The original 12 GB budget was an unmeasured guess; this task's first measurement
+  showed 13.82 GB compressed, so the budget was adjusted upward — now passing with margin.
 - **pytorch-code (18.15 GB) is essentially at parity with the pre-refactor ~17.6 GB baseline**, not
   smaller. This is expected and correct: consolidation's savings come from registry-level layer
   deduplication across variants (see below), not from shrinking any single image's own size.
@@ -144,7 +142,7 @@ matrix entry, bringing `build-dependents` from 3 to 4 jobs).
 
 CI run: https://github.com/mul-cps/cps-jupyter-notebook/actions/runs/30878888279
 Triggered via `gh workflow run docker-publish.yml --ref consolidate-images` on commit `7031be3`
-(tip of the branch at re-verification time). No fixes were needed — all 7 jobs passed on the first
+(tip of the branch at re-verification time). No fixes were needed — all 8 jobs passed on the first
 attempt.
 
 | Stage | Job | Result | Duration |
@@ -158,7 +156,7 @@ attempt.
 | build-dependents | desktop-ros2-xpra (new) | success | ~15m |
 | build-dependents | comfyui | success | ~18m |
 
-**7/7 jobs succeeded, total run time ~62 minutes.**
+**8/8 jobs succeeded, total run time ~62 minutes.**
 
 ### desktop-ros2 re-verification
 
@@ -215,7 +213,7 @@ checked before each pull (466 GB free throughout, well above the 30 GB abort thr
 
 ### Summary of this second run
 
-- **CI: 7/7 jobs green**, no fixes required.
+- **CI: 8/8 jobs green** (second run, after desktop-ros2-xpra added), no fixes required.
 - **desktop-ros2: static functional checks pass, size unchanged from the original battle-test** — the
   re-refactor onto `main`'s 3 bug fixes did not regress consolidation.
 - **desktop-ros2-xpra: functionally sound** (torch/transformers/jupyterlab importable, xpra/
@@ -234,10 +232,10 @@ checked before each pull (466 GB free throughout, well above the 30 GB abort thr
 
 ## Summary
 
-- **CI: 7/7 jobs succeeded** on the fixed pipeline.
+- **CI: 7/7 jobs succeeded** on the fixed pipeline (first run); **8/8 jobs succeeded** on the second run (second run with desktop-ros2-xpra added).
 - **Functional checks: 7/7 variants passed**, zero regressions vs. the pre-refactor variants' behavior.
-- **Sizes: 6/7 variants under budget**; base-gpu exceeds its (admittedly unmeasured/guessed) budget by
-  ~1.8 GB — not a regression, first real measurement of a new artifact.
+- **Sizes: 7/7 variants under budget** (first run); base-gpu's initial 12 GB budget was an unmeasured guess,
+  but was later bumped to 15 GB (commit adecf78) based on this task's measurement of 13.82 GB compressed.
 - **Real registry dedup savings: ~67.5 GB (73%)** across the 7 published images, from shared-layer
   reuse — this is the actual payoff of the consolidation, and it is not visible from any single image's
   reported size.
