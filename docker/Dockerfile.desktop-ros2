@@ -1,7 +1,15 @@
+# docker/Dockerfile.desktop-ros2
+#
+# Adds ROS 2 Jazzy desktop + VirtualGL/TurboVNC/XFCE4 on top of the
+# already-published pytorch-code image (which already has the full
+# PyTorch stack + shared JupyterLab/code-server bundle) instead of
+# reinstalling PyTorch and the shared bundle from scratch. See
+# docs/superpowers/plans/2026-08-03-consolidate-images.md.
 # =========================
 # Stage 0: base runtime
 # =========================
-FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim AS base
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code
+FROM ${BASE_IMAGE} AS base
 
 # Toggle optional heavy GUI apps (saves CI disk if disabled)
 ARG INCLUDE_VSCODE_DESKTOP=0
@@ -63,7 +71,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         set -eux; \
         apt-get update; \
         apt-get install -y --no-install-recommends \
-            # Desktop / VNC stack
             dbus-x11 \
             xfce4 \
             xfce4-terminal \
@@ -72,7 +79,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
             websockify \
             supervisor \
             pulseaudio \
-            # Dev tools
             git \
             wget \
             build-essential \
@@ -87,7 +93,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
             openssh-server \
             sudo \
             jq \
-            # ROS 2 Jazzy desktop + build helpers
             ros-jazzy-desktop \
             ros-jazzy-rmw-cyclonedds-cpp \
             python3-colcon-common-extensions \
@@ -113,10 +118,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
             evince; \
         fi; \
         rm -rf /var/lib/apt/lists/*
-
-# ---- code-server (browser VSCode)
-RUN set -eux; \
-        curl -fsSL https://code-server.dev/install.sh | sh
 
 # ---- TurboVNC (kept as .deb; could also be from upstream apt, but this is fine)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -152,7 +153,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         # of whatever the 2D VNC X server's own GLX support is.
         printf '%s\n' '#!/bin/sh' 'exec /opt/TurboVNC/bin/Xvnc "$@" -extension GLX' > /usr/local/bin/Xvnc; \
         chmod +x /usr/local/bin/Xvnc; \
-        # If tigervnc sneaks in via deps, remove it
         apt-get remove -y tigervnc-standalone-server || true; \
         apt-get autoremove -y; \
         rm -rf /var/lib/apt/lists/*
@@ -167,70 +167,12 @@ RUN set -eux; \
         rosdep init || true; \
         rosdep update || true
 
-RUN usermod -aG sudo "${NB_USER}"
-
-# ---- Jupyter + remote-desktop + proxies
+# ---- jupyter-remote-desktop-proxy: the one package this variant needs
+# that pytorch-code (its new base) does not already provide.
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
         set -eux; \
-        pip install --upgrade \
-            jupyterlab==4.5.7 \
-            jupyter-remote-desktop-proxy \
-            jupyter-server-proxy \
-            jupyterlab-git \
-            nbgitpuller \
-            jupyter-resource-usage \
-            catppuccin-jupyterlab \
-            jupyterlab-horizon-theme \
-            jupyterlab-topbar-text \
-            lckr-jupyterlab-variableinspector \
-            jupyterlab-image-editor \
-            jupyterlab-link-share \
-            jupyterlab-spreadsheet-editor \
-            jupyterlab-filesystem-access \
-            jupyter-archive \
-            jlab-enhanced-cell-toolbar \
-            jupyterlab-favorites \
-            jlab-enhanced-launcher \
-            jupyter-sshd-proxy \
-            git+https://github.com/bjoernellens1/jupyter-code-server \
-            jupyter-glances-proxy \
-            git-credential-helpers \
-            jupyterlab-nvdashboard \
-            ipywidgets \
-            jupyterlab-lsp \
-            "python-lsp-server[all]" \
-            black \
-            isort \
-            ruff \
-            notebook-intelligence; \
+        pip install --upgrade jupyter-remote-desktop-proxy; \
         rm -rf /opt/conda/share/jupyter/lab/staging /root/.cache /home/${NB_USER}/.cache || true
-
-# nb_conda_kernels via conda
-RUN set -eux; \
-        (mamba install -y -c conda-forge nb_conda_kernels || \
-            /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels); \
-        /opt/conda/bin/conda clean -afy
-
-# PyTorch GPU stack
-RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
-        set -eux; \
-        pip install --upgrade \
-            "torch==2.11.*" \
-            "torchvision==0.26.*" \
-            "torchaudio==2.11.*" \
-            --index-url https://download.pytorch.org/whl/cu129; \
-        pip install --upgrade \
-            transformers \
-            datasets \
-            accelerate \
-            lightning \
-            timm \
-            opencv-python-headless \
-            scikit-image \
-            scikit-learn \
-            pandas \
-            matplotlib \
-            seaborn
 
 # Enable server extensions
 RUN set -eux; \
@@ -243,12 +185,10 @@ RUN set -eux; \
         cat > /usr/local/bin/_vglwrap <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-# No GUI session => do nothing special
 if [[ -z "${DISPLAY:-}" ]]; then
     exec "$@"
 fi
 export VGL_DISPLAY="${VGL_DISPLAY:-egl}"
-# No GPU visible => run normally
 if [[ ! -e /dev/nvidia0 && -z "${NVIDIA_VISIBLE_DEVICES:-}" ]]; then
     exec "$@"
 fi
@@ -272,10 +212,8 @@ RUN set -eux; \
             fi; \
         done
 
-# Ensure before-notebook.d directory exists
 RUN mkdir -p /usr/local/bin/before-notebook.d
 
-# Conda init for NB_USER
 RUN set -eux; \
         echo ". /opt/conda/etc/profile.d/conda.sh" >> /home/${NB_USER}/.bashrc; \
         echo "conda activate base" >> /home/${NB_USER}/.bashrc; \
@@ -290,14 +228,12 @@ WORKDIR /home/${NB_USER}/work
 FROM base AS extensions
 
 USER root
-# Ensure extension dirs exist and are writable
 RUN set -eux; \
         mkdir -p /opt/code-server-ext /opt/code-server-data; \
         chown -R ${NB_USER}:users /opt/code-server-ext /opt/code-server-data
 
 USER ${NB_USER}
 
-# Install extensions into a neutral, copyable location
 RUN set -eux; \
         code-server \
             --user-data-dir /opt/code-server-data \
@@ -335,15 +271,12 @@ RUN set -eux; \
 FROM base AS final
 
 USER root
-# Copy preinstalled code-server extensions
 COPY --from=extensions /opt/code-server-ext /opt/code-server-ext
 COPY --from=extensions /opt/code-server-data /opt/code-server-data
 
-# Make code-server use the shared extension dir by default
 ENV CODE_SERVER_EXTENSIONS_DIR=/opt/code-server-ext
 ENV CODE_SERVER_USER_DATA_DIR=/opt/code-server-data
 
-# Your existing scripts/configs
 COPY 00-prepare-readonly-home.sh /usr/local/bin/before-notebook.d/
 COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
 RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
@@ -351,20 +284,12 @@ RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
-# Copilot installer (kept as you had it)
-USER ${NB_USER}
-COPY --chown=${NB_USER}:users install-copilot.sh /tmp/install-copilot.sh
-RUN chmod +x /tmp/install-copilot.sh && /tmp/install-copilot.sh && rm /tmp/install-copilot.sh
-
 USER root
-# Default VirtualGL backend to EGL for all users/shells
 RUN set -eux; \
     cat > /etc/profile.d/10-virtualgl-egl.sh <<'EOF'
-# Default VirtualGL backend (no Xorg :0 needed)
 export VGL_DISPLAY=${VGL_DISPLAY:-egl}
 EOF
 
-# Also set for non-login shells (global bashrc)
 RUN set -eux; \
     echo 'export VGL_DISPLAY=${VGL_DISPLAY:-egl}' >> /etc/bash.bashrc
 WORKDIR /home/${NB_USER}/work

@@ -1,7 +1,15 @@
+# docker/Dockerfile.desktop-ros2-xpra
+#
+# Adds ROS 2 Jazzy desktop + VirtualGL/Xpra/XFCE4 on top of the
+# already-published pytorch-code image (which already has the full
+# PyTorch stack + shared JupyterLab/code-server bundle) instead of
+# reinstalling PyTorch and the shared bundle from scratch. See
+# docs/superpowers/plans/2026-08-03-consolidate-images.md.
 # =========================
 # Stage 0: base runtime
 # =========================
-FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim AS base
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code
+FROM ${BASE_IMAGE} AS base
 
 # Toggle optional heavy GUI apps (saves CI disk if disabled)
 ARG INCLUDE_VSCODE_DESKTOP=0
@@ -136,10 +144,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         fi; \
         rm -rf /var/lib/apt/lists/*
 
-# ---- code-server (browser VSCode)
-RUN set -eux; \
-        curl -fsSL https://code-server.dev/install.sh | sh
-
 # ---- ROS environment
 RUN set -eux; \
         echo "source /opt/ros/jazzy/setup.bash" >> /etc/bash.bashrc; \
@@ -150,80 +154,17 @@ RUN set -eux; \
         rosdep init || true; \
         rosdep update || true
 
-RUN usermod -aG sudo "${NB_USER}"
-
-# ---- Jupyter + remote-desktop + proxies
 # NOTE: jupyter_remote_desktop_proxy is VNC-specific and NOT used here --
 # the Xpra desktop is wired up via a c.ServerProxy.servers entry in the
 # cluster's jupyter_server_config.py (see the JupyterHub values.yaml in
 # cps-gpu-cluster / cit-teaching-platform), driving `xpra start` directly.
-# jupyter_server_proxy itself is still required as the mechanism that
-# entry uses.
-RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
-        set -eux; \
-        pip install --upgrade \
-            jupyterlab==4.5.7 \
-            jupyter-server-proxy \
-            jupyterlab-git \
-            nbgitpuller \
-            jupyter-resource-usage \
-            catppuccin-jupyterlab \
-            jupyterlab-horizon-theme \
-            jupyterlab-topbar-text \
-            lckr-jupyterlab-variableinspector \
-            jupyterlab-image-editor \
-            jupyterlab-link-share \
-            jupyterlab-spreadsheet-editor \
-            jupyterlab-filesystem-access \
-            jupyter-archive \
-            jlab-enhanced-cell-toolbar \
-            jupyterlab-favorites \
-            jlab-enhanced-launcher \
-            jupyter-sshd-proxy \
-            git+https://github.com/bjoernellens1/jupyter-code-server \
-            jupyter-glances-proxy \
-            git-credential-helpers \
-            jupyterlab-nvdashboard \
-            ipywidgets \
-            jupyterlab-lsp \
-            "python-lsp-server[all]" \
-            black \
-            isort \
-            ruff \
-            notebook-intelligence; \
-        rm -rf /opt/conda/share/jupyter/lab/staging /root/.cache /home/${NB_USER}/.cache || true
-
-# nb_conda_kernels via conda
-RUN set -eux; \
-        (mamba install -y -c conda-forge nb_conda_kernels || \
-            /opt/conda/bin/conda install -y -c conda-forge nb_conda_kernels); \
-        /opt/conda/bin/conda clean -afy
-
-# PyTorch GPU stack
-RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
-        set -eux; \
-        pip install --upgrade \
-            "torch==2.11.*" \
-            "torchvision==0.26.*" \
-            "torchaudio==2.11.*" \
-            --index-url https://download.pytorch.org/whl/cu129; \
-        pip install --upgrade \
-            transformers \
-            datasets \
-            accelerate \
-            lightning \
-            timm \
-            opencv-python-headless \
-            scikit-image \
-            scikit-learn \
-            pandas \
-            matplotlib \
-            seaborn
+# jupyter_server_proxy is still required as the mechanism that entry
+# uses, but it's already installed by pytorch-code's base-gpu ancestor,
+# so there's nothing left to install here.
 
 # Enable server extensions
 RUN set -eux; \
-        jupyter server extension enable --sys-prefix jupyter_server_proxy || true; \
-        jupyter server extension enable --sys-prefix jupyterlab_nvdashboard || true
+        jupyter server extension enable --sys-prefix jupyter_server_proxy || true
 
 # ---- Auto-wrap VirtualGL EGL (users don't have to type vglrun)
 RUN set -eux; \
@@ -386,10 +327,7 @@ RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
 RUN mkdir -p /root/.ipython/profile_default
 COPY ipython_kernel_config.py /root/.ipython/profile_default/ipython_kernel_config.py
 
-# Copilot installer (kept as you had it)
-USER ${NB_USER}
-COPY --chown=${NB_USER}:users install-copilot.sh /tmp/install-copilot.sh
-RUN chmod +x /tmp/install-copilot.sh && /tmp/install-copilot.sh && rm /tmp/install-copilot.sh
+# Copilot is already installed via base-gpu, inherited through pytorch-code.
 
 USER root
 # Default VirtualGL backend to EGL for all users/shells

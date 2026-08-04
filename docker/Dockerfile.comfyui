@@ -1,16 +1,17 @@
 # ComfyUI Jupyter Notebook Image
-# Based on the official Jupyter datascience-notebook with ComfyUI integration
-
-FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim AS base
+#
+# Adds ComfyUI on top of the already-published pytorch-code image
+# (which already has the full PyTorch stack + shared JupyterLab/
+# code-server bundle) instead of reinstalling PyTorch and the shared
+# bundle from scratch. See
+# docs/superpowers/plans/2026-08-03-consolidate-images.md.
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code
+FROM ${BASE_IMAGE} AS base
 
 USER root
 
-# Install system dependencies
+# ComfyUI-specific system dependencies not already covered by base
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  git \
-  wget \
-  curl \
-  build-essential \
   libgl1 \
   libglx-mesa0 \
   libglib2.0-0 \
@@ -18,61 +19,18 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
   libxext6 \
   libxrender-dev \
   libgomp1 \
-  gh \
-  nodejs \
-  npm \
-  btop \
-  openssh-server \
-  tmux \
   && rm -rf /var/lib/apt/lists/*
 
-# Install code-server
-RUN curl -fsSL https://code-server.dev/install.sh | sh
-
-# Add jovyan to sudo group
-RUN usermod -aG sudo jovyan
-
 USER jovyan
-
-# Install JupyterLab extensions and jupyter-server-proxy
-RUN pip install --upgrade --no-cache-dir \
-  jupyterlab==4.5.7 \
-  jupyterlab-git \
-  nbgitpuller \
-  jupyter-resource-usage \
-  catppuccin-jupyterlab \
-  jupyterlab-horizon-theme \
-  jupyterlab-topbar-text \
-  lckr-jupyterlab-variableinspector \
-  jupyterlab-image-editor \
-  jupyterlab-link-share \
-  jupyterlab-spreadsheet-editor \
-  jupyterlab-filesystem-access \
-  jupyter-archive \
-  jlab-enhanced-cell-toolbar \
-  jupyterlab-favorites \
-  jlab-enhanced-launcher \
-  jupyter-sshd-proxy \
-  jupyter-server-proxy \
-  git+https://github.com/bjoernellens1/jupyter-code-server \
-  jupyter-glances-proxy \
-  git-credential-helpers && \
-  npm cache clean --force && \
-  rm -rf $CONDA_DIR/share/jupyter/lab/staging
 
 # Clone ComfyUI
 WORKDIR /opt/comfyui
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git .
 
-# Install PyTorch with CUDA support
-RUN pip install --upgrade \
-  "torch==2.11.*" \
-  "torchvision==0.26.*" \
-  "torchaudio==2.11.*" \
-  --index-url https://download.pytorch.org/whl/cu129
-
-# Install ComfyUI dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install ComfyUI dependencies (torch/torchvision/torchaudio already
+# provided by the pytorch-code base -- no separate PyTorch install here)
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
 
 # Clone ComfyUI Manager into custom_nodes
 WORKDIR /opt/comfyui/custom_nodes
@@ -80,11 +38,13 @@ RUN git clone https://github.com/ltdrdata/ComfyUI-Manager.git
 
 # Install ComfyUI Manager dependencies
 WORKDIR /opt/comfyui/custom_nodes/ComfyUI-Manager
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
 
 # Install jupyter-comfyui-proxy
 COPY --chown=jovyan:users jupyter-comfyui-proxy /tmp/jupyter-comfyui-proxy
-RUN pip install /tmp/jupyter-comfyui-proxy && \
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install /tmp/jupyter-comfyui-proxy && \
   rm -rf /tmp/jupyter-comfyui-proxy
 
 # Switch to root for permission changes and password setup
@@ -103,7 +63,8 @@ RUN --mount=type=secret,id=root_password \
 
 USER root
 
-# Copy pre-notebook hooks
+# Copy pre-notebook hooks (already present from base, but keep this
+# explicit copy to match the pre-refactor file's own behavior exactly)
 RUN mkdir -p /usr/local/bin/before-notebook.d
 COPY 00-prepare-readonly-home.sh /usr/local/bin/before-notebook.d/
 COPY fix-permissions.sh /usr/local/bin/before-notebook.d/
@@ -111,14 +72,12 @@ RUN chmod +x /usr/local/bin/before-notebook.d/*.sh
 
 USER jovyan
 
-# Set working directory back to jovyan home
 WORKDIR /home/jovyan/work
 
 # Copy ipython kernel config
 RUN mkdir -p /home/jovyan/.ipython/profile_default
 COPY ipython_kernel_config.py /home/jovyan/.ipython/profile_default/ipython_kernel_config.py
 
-# Set environment variables
 ENV COMFYUI_PATH=/opt/comfyui
 ENV username=jovyan
 
