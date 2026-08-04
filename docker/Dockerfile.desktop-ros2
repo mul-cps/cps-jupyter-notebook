@@ -132,7 +132,26 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         ln -sf /opt/TurboVNC/bin/vncpasswd /usr/local/bin/vncpasswd; \
         ln -sf /opt/TurboVNC/bin/vncconnect /usr/local/bin/vncconnect; \
         ln -sf /opt/TurboVNC/bin/tvncconfig /usr/local/bin/tvncconfig; \
-        printf '%s\n' '#!/bin/sh' 'exec /opt/TurboVNC/bin/Xvnc "$@"' > /usr/local/bin/Xvnc; \
+        # TurboVNC's vncserver script resolves its "webserver" helper
+        # relative to how IT was invoked ($0), not the symlink target --
+        # since jupyter-remote-desktop-proxy invokes it via this
+        # /usr/local/bin/vncserver symlink, it looks for a sibling
+        # /usr/local/bin/webserver. Without this symlink vncserver aborts
+        # immediately with `couldn't find "/usr/local/bin/webserver"` and
+        # Xvnc never starts at all (confirmed live, 2026-07-24).
+        ln -sf /opt/TurboVNC/bin/webserver /usr/local/bin/webserver; \
+        # Simple Xvnc shim: explicitly disable Xvnc's own built-in GLX
+        # extension. This was already the intent (see comment below) but
+        # was never actually implemented -- Xvnc initialized GLX anyway
+        # and segfaulted during extension init on this driver/environment
+        # (confirmed live, 2026-07-24: `Initializing extension GLX` ->
+        # `Segmentation fault`, every launch, before any client could
+        # connect). GPU acceleration doesn't need Xvnc's GLX here: apps
+        # get it via VirtualGL's EGL backend (_vglwrap /
+        # VGL_DISPLAY=egl below), which talks to the GPU directly and
+        # works fine under an MPS-sliced allocation -- it's independent
+        # of whatever the 2D VNC X server's own GLX support is.
+        printf '%s\n' '#!/bin/sh' 'exec /opt/TurboVNC/bin/Xvnc "$@" -extension GLX' > /usr/local/bin/Xvnc; \
         chmod +x /usr/local/bin/Xvnc; \
         apt-get remove -y tigervnc-standalone-server || true; \
         apt-get autoremove -y; \
@@ -177,8 +196,15 @@ exec vglrun -d "${VGL_DISPLAY}" "$@"
 EOF
 RUN chmod +x /usr/local/bin/_vglwrap
 
+# Optional shims for common apps (wrap only if present)
+# rviz2 (not "rviz" -- that's the ROS1 binary name; this image is ROS 2
+# Jazzy only) was missing here, so it ran unwrapped straight against
+# Xvnc's display -- and since Xvnc's own GLX extension is intentionally
+# disabled (see the Xvnc shim above), it failed immediately with
+# `Xlib: extension "GLX" missing on display` instead of getting routed
+# through VirtualGL's EGL backend (confirmed live, 2026-07-24).
 RUN set -eux; \
-        for app in glxinfo glxgears blender gazebo rviz; do \
+        for app in glxinfo glxgears blender gazebo rviz rviz2 rqt; do \
             if command -v "$app" >/dev/null 2>&1; then \
                 real="$(command -v "$app")"; \
                 printf '%s\n' '#!/usr/bin/env bash' "exec /usr/local/bin/_vglwrap \"$real\" \"\$@\"" > "/usr/local/bin/$app"; \
