@@ -10,7 +10,7 @@ ENV MUJOCO_GL=egl \
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     set -eux; \
     pip install --upgrade --no-cache-dir mujoco gymnasium; \
-    rm -rf /root/.cache /home/${NB_USER}/.cache
+    rm -rf /root/.cache
 
 USER ${NB_UID}
 WORKDIR /home/${NB_USER}/work
