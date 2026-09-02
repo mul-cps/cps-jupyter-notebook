@@ -45,9 +45,22 @@ RUN chmod +x /usr/local/bin/_vglwrap
 
 RUN cat > /usr/local/bin/start-xpra-desktop.sh <<'EOF'
 #!/bin/sh
-rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
-rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml"
-exec dbus-launch --exit-with-session xfce4-session
+set -eu
+
+# Xpra owns the window-manager role.  Starting a full XFCE session would also
+# start xfwm4, causing it to fight Xpra for EWMH ownership and making XFCE's
+# panel/task list disappear.  Start only the desktop components and tell them
+# that the Xpra window manager is intentional.
+: "${XDG_RUNTIME_DIR:=/tmp/xdg-runtime-$(id -u)}"
+export XDG_RUNTIME_DIR
+install -d -m 700 "$XDG_RUNTIME_DIR"
+
+exec dbus-run-session -- sh -eu -c '
+  xfsettingsd &
+  xfdesktop --disable-wm-check &
+  xfce4-panel --disable-wm-check &
+  wait
+'
 EOF
 RUN chmod +x /usr/local/bin/start-xpra-desktop.sh
 

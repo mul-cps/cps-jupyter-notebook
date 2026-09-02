@@ -90,6 +90,8 @@ case "$VARIANT" in
     check_cmd "MuJoCo version helper" mujoco -v
     check_cmd "Xpra binary present" sh -c "command -v xpra"
     check_cmd "VirtualGL binary present" sh -c "command -v vglrun"
+    check_cmd "Xpra desktop avoids competing XFCE window manager" sh -c "! grep -q 'xfce4-session' /usr/local/bin/start-xpra-desktop.sh && grep -q -- '--disable-wm-check' /usr/local/bin/start-xpra-desktop.sh"
+    check_cmd "Xpra desktop provides a private runtime directory" sh -c "grep -q 'XDG_RUNTIME_DIR' /usr/local/bin/start-xpra-desktop.sh"
     check_cmd "VirtualGL Xpra kernel launcher present" sh -c "[ -x /usr/local/bin/start-vgl-xpra-kernel ]"
     check_cmd "VirtualGL Xpra kernel spec is present" sh -c "[ -f /usr/local/share/jupyter/kernels/python3-vgl-xpra/kernel.json ]"
     check_cmd "VirtualGL Xpra kernel targets Xpra display" sh -c "grep -q 'DISPLAY=:100 vglrun' /usr/local/bin/start-vgl-xpra-kernel"
