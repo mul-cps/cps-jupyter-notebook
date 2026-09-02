@@ -138,7 +138,14 @@ def main():
     desktop_xpra_base = DOCKER_DIR / "Dockerfile.desktop-xpra-base"
     if desktop_xpra_base.exists():
         desktop_xpra_text = desktop_xpra_base.read_text()
-        for required in ("xpra-html5", "jupyter_server_proxy", 'gpasswd -d "${NB_USER}" sudo'):
+        for required in (
+            "xpra-html5",
+            "xpra-x11",
+            "jupyter_server_proxy",
+            "xserver-xorg-video-dummy",
+            "xfwm4 --compositor=off",
+            'gpasswd -d "${NB_USER}" sudo',
+        ):
             if required not in desktop_xpra_text:
                 errors.append(
                     f"Dockerfile.desktop-xpra-base: missing required desktop contract {required!r}"
