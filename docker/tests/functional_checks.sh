@@ -48,7 +48,11 @@ check_contains "code-server has ms-python.python extension" code-server --list-e
 check_contains "code-server has ms-toolsai.jupyter extension" code-server --list-extensions -- "ms-toolsai.jupyter"
 check_contains "code-server has mhutchie.git-graph extension" code-server --list-extensions -- "mhutchie.git-graph"
 check_cmd "jovyan user exists" id jovyan
-check_cmd "jovyan is in sudo group" sh -c "id jovyan | grep -q sudo"
+if [ "$VARIANT" = "mujoco-xpra" ]; then
+  check_cmd "jovyan has no sudo" sh -c '! id jovyan | grep -qw sudo'
+else
+  check_cmd "jovyan is in sudo group" sh -c "id jovyan | grep -q sudo"
+fi
 check_cmd "before-notebook.d hooks present" sh -c "[ -x /usr/local/bin/before-notebook.d/00-prepare-readonly-home.sh ] && [ -x /usr/local/bin/before-notebook.d/fix-permissions.sh ]"
 check_cmd "ipython_kernel_config.py present" sh -c "[ -f /root/.ipython/profile_default/ipython_kernel_config.py ] || [ -f /home/jovyan/.ipython/profile_default/ipython_kernel_config.py ]"
 
@@ -96,7 +100,6 @@ case "$VARIANT" in
     check_cmd "VirtualGL Xpra kernel spec is present" sh -c "[ -f /usr/local/share/jupyter/kernels/python3-vgl-xpra/kernel.json ]"
     check_cmd "VirtualGL Xpra kernel targets Xpra display" sh -c "grep -q 'DISPLAY=:100 vglrun' /usr/local/bin/start-vgl-xpra-kernel"
     check_cmd "EGL environment is configured" sh -c '[ "$MUJOCO_GL" = egl ] && [ "$PYOPENGL_PLATFORM" = egl ]'
-    check_cmd "jovyan has no sudo" sh -c '! id jovyan | grep -qw sudo'
     ;;
 esac
 
