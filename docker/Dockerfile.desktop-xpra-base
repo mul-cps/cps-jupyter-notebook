@@ -51,7 +51,9 @@ set -eu
 # start xfwm4, causing it to fight Xpra for EWMH ownership and making XFCE's
 # panel/task list disappear.  Start only the desktop components and tell them
 # that the Xpra window manager is intentional.
-: "${XDG_RUNTIME_DIR:=/tmp/xdg-runtime-$(id -u)}"
+if [ -z "${XDG_RUNTIME_DIR:-}" ] || [ "${XDG_RUNTIME_DIR:-}" = "/tmp" ]; then
+  XDG_RUNTIME_DIR="/tmp/xdg-runtime-$(id -u)"
+fi
 export XDG_RUNTIME_DIR
 install -d -m 700 "$XDG_RUNTIME_DIR"
 

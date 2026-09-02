@@ -143,6 +143,12 @@ def main():
                 errors.append(
                     f"Dockerfile.desktop-xpra-base: missing required desktop contract {required!r}"
                 )
+        runtime_guard = '"${XDG_RUNTIME_DIR:-}" = "/tmp"'
+        if runtime_guard not in desktop_xpra_text:
+            errors.append(
+                "Dockerfile.desktop-xpra-base: Xpra may export XDG_RUNTIME_DIR=/tmp; "
+                "the desktop launcher must replace it with a private directory"
+            )
 
     ros_xpra = DOCKER_DIR / "Dockerfile.desktop-ros2-xpra"
     if ros_xpra.exists():
