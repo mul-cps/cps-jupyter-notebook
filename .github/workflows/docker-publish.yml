@@ -85,7 +85,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.base }}
           cache-to: type=gha,mode=max,scope=${{ matrix.base }}
 
-  build-gpu-frameworks:
+  build-pytorch-runtime:
     needs: build-bases
     runs-on: ubuntu-latest
     permissions:
@@ -95,7 +95,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [pytorch-code, tf-code]
+        variant: [pytorch-runtime-base]
     steps:
       - uses: actions/checkout@v7
       - name: Free up disk space on runner
@@ -163,6 +163,53 @@ jobs:
           echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
           echo "| ${{ matrix.variant }} | docker/Dockerfile.${{ matrix.variant }} | ${{ steps.meta.outputs.tags }} |" >> $GITHUB_STEP_SUMMARY
 
+  build-gpu-frameworks:
+    needs: build-pytorch-runtime
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: pytorch-code
+            base_image: cps-jupyter-notebook-base-gpu:${{ github.ref_name }}
+          - variant: tf-code
+            base_image: cps-jupyter-notebook-base-gpu:${{ github.ref_name }}
+          - variant: desktop-xpra-base
+            base_image: cps-jupyter-notebook:${{ github.ref_name }}-pytorch-runtime-base
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest-${{ matrix.variant }},enable=${{ startsWith(github.ref, 'refs/heads/main') }}
+            type=ref,event=branch,suffix=-${{ matrix.variant }}
+            type=sha,suffix=-${{ matrix.variant }}
+      - id: base_image_arg
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then echo "value=" >> "$GITHUB_OUTPUT"; else echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ matrix.base_image }}" >> "$GITHUB_OUTPUT"; fi
+      - uses: docker/build-push-action@v7
+        with:
+          context: ./docker
+          file: docker/Dockerfile.${{ matrix.variant }}
+          push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: ${{ steps.base_image_arg.outputs.value }}
+          cache-from: type=gha,scope=${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}
+
   build-dependents:
     needs: build-gpu-frameworks
     runs-on: ubuntu-latest
@@ -189,7 +236,11 @@ jobs:
           - name: desktop-ros2-xpra
             dockerfile: docker/Dockerfile.desktop-ros2-xpra
             suffix: desktop-ros2-xpra
-            base_image: cps-jupyter-notebook:${{ github.ref_name }}-pytorch-code
+            base_image: cps-jupyter-notebook:${{ github.ref_name }}-desktop-xpra-base
+          - name: mujoco-xpra
+            dockerfile: docker/Dockerfile.mujoco-xpra
+            suffix: mujoco-xpra
+            base_image: cps-jupyter-notebook:${{ github.ref_name }}-desktop-xpra-base
     steps:
       - uses: actions/checkout@v7
       - name: Free up disk space on runner

@@ -28,7 +28,8 @@ CONSOLIDATED_VARIANTS = {
     "Dockerfile.tf-code": "ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu",
     "Dockerfile.desktop-ros2": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
     "Dockerfile.comfyui": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
-    "Dockerfile.desktop-ros2-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
+    "Dockerfile.desktop-ros2-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base",
+    "Dockerfile.mujoco-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base",
     "Dockerfile.pytorch-runtime-base": "ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu",
     "Dockerfile.desktop-xpra-base": "ghcr.io/mul-cps/cps-jupyter-notebook:pytorch-runtime-base",
 }

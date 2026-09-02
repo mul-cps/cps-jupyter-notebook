@@ -8,7 +8,7 @@
 # =========================
 # Stage 0: base runtime
 # =========================
-ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base
 FROM ${BASE_IMAGE} AS base
 
 # Toggle optional heavy GUI apps (saves CI disk if disabled)
