@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-bases:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
       packages: write
@@ -51,6 +51,10 @@ jobs:
           echo "Disk usage after cleanup:"; df -h
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
+      - name: Use in-cluster BuildKit pool
+        run: |
+          docker buildx create --name ci-pool --driver remote \
+            tcp://buildkit-pool.ci.svc.cluster.local:1234 --use
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -87,7 +91,7 @@ jobs:
 
   build-pytorch-runtime:
     needs: build-bases
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
       packages: write
@@ -112,6 +116,10 @@ jobs:
           docker builder prune -af || true
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
+      - name: Use in-cluster BuildKit pool
+        run: |
+          docker buildx create --name ci-pool --driver remote \
+            tcp://buildkit-pool.ci.svc.cluster.local:1234 --use
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -165,7 +173,7 @@ jobs:
 
   build-gpu-frameworks:
     needs: build-pytorch-runtime
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
       packages: write
@@ -183,6 +191,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
+      - name: Use in-cluster BuildKit pool
+        run: |
+          docker buildx create --name ci-pool --driver remote \
+            tcp://buildkit-pool.ci.svc.cluster.local:1234 --use
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -212,7 +224,7 @@ jobs:
 
   build-dependents:
     needs: build-gpu-frameworks
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
       packages: write
@@ -257,6 +269,10 @@ jobs:
           docker builder prune -af || true
       - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
+      - name: Use in-cluster BuildKit pool
+        run: |
+          docker buildx create --name ci-pool --driver remote \
+            tcp://buildkit-pool.ci.svc.cluster.local:1234 --use
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
