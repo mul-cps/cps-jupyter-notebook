@@ -34,5 +34,28 @@ esac
 EOF
 RUN chmod 0755 /usr/local/bin/mujoco
 
+# A notebook's default kernel is not attached to Xpra's virtual display.
+# Provide an explicit kernel that routes GLFW through VirtualGL to :100 so
+# `mujoco.viewer.launch()` opens in the Xpra desktop while EGL remains the
+# default for off-screen rendering.
+RUN install -d -m 0755 /usr/local/share/jupyter/kernels/python3-vgl-xpra && \
+    cat > /usr/local/bin/start-vgl-xpra-kernel <<'EOF' && \
+    chmod 0755 /usr/local/bin/start-vgl-xpra-kernel && \
+    cat > /usr/local/share/jupyter/kernels/python3-vgl-xpra/kernel.json <<'EOF_JSON'
+#!/bin/sh
+set -eu
+exec env DISPLAY=:100 vglrun /opt/conda/bin/python -m ipykernel_launcher "$@"
+EOF
+{
+  "argv": [
+    "/usr/local/bin/start-vgl-xpra-kernel",
+    "-f",
+    "{connection_file}"
+  ],
+  "display_name": "Python 3 (VirtualGL/Xpra)",
+  "language": "python"
+}
+EOF_JSON
+
 USER ${NB_UID}
 WORKDIR /home/${NB_USER}/work

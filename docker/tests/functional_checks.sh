@@ -90,6 +90,9 @@ case "$VARIANT" in
     check_cmd "MuJoCo version helper" mujoco -v
     check_cmd "Xpra binary present" sh -c "command -v xpra"
     check_cmd "VirtualGL binary present" sh -c "command -v vglrun"
+    check_cmd "VirtualGL Xpra kernel launcher present" sh -c "[ -x /usr/local/bin/start-vgl-xpra-kernel ]"
+    check_cmd "VirtualGL Xpra kernel spec is present" sh -c "[ -f /usr/local/share/jupyter/kernels/python3-vgl-xpra/kernel.json ]"
+    check_cmd "VirtualGL Xpra kernel targets Xpra display" sh -c "grep -q 'DISPLAY=:100 vglrun' /usr/local/bin/start-vgl-xpra-kernel"
     check_cmd "EGL environment is configured" sh -c '[ "$MUJOCO_GL" = egl ] && [ "$PYOPENGL_PLATFORM" = egl ]'
     check_cmd "jovyan has no sudo" sh -c '! id jovyan | grep -qw sudo'
     ;;
