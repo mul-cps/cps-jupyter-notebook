@@ -29,7 +29,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     rm -f /tmp/virtualgl.deb; \
     rm -rf /var/lib/apt/lists/*
 
-RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --no-cache-dir jupyter-server-proxy && \
+    jupyter server extension enable --sys-prefix jupyter_server_proxy
 
 RUN cat > /usr/local/bin/_vglwrap <<'EOF'
 #!/usr/bin/env bash

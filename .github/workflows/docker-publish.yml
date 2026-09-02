@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base: [base-cpu, base-gpu]
+        base: [base-cpu, base-gpu, mujoco-base-gpu]
     steps:
       - uses: actions/checkout@v7
       - name: Free up disk space on runner
@@ -145,7 +145,7 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "value=" >> "$GITHUB_OUTPUT"
           else
-            echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-base-gpu:${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "value=BASE_IMAGE=ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-mujoco-base-gpu:${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           fi
       - name: Build and push
         uses: docker/build-push-action@v7

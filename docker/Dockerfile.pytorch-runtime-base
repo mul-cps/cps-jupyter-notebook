@@ -1,6 +1,6 @@
 # Shared PyTorch runtime layer. The pinned Jupyter upstream base already ships
 # torch and torchvision; this stage makes that contract explicit for children.
-ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu:latest
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook-mujoco-base-gpu:latest
 FROM ${BASE_IMAGE}
 
 USER root

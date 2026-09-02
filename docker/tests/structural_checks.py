@@ -30,7 +30,7 @@ CONSOLIDATED_VARIANTS = {
     "Dockerfile.comfyui": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
     "Dockerfile.desktop-ros2-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base",
     "Dockerfile.mujoco-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base",
-    "Dockerfile.pytorch-runtime-base": "ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu",
+    "Dockerfile.pytorch-runtime-base": "ghcr.io/mul-cps/cps-jupyter-notebook-mujoco-base-gpu",
     "Dockerfile.desktop-xpra-base": "ghcr.io/mul-cps/cps-jupyter-notebook:pytorch-runtime-base",
 }
 
@@ -159,8 +159,8 @@ def main():
                     f"layer installation {duplicate!r}"
                 )
 
-    # base images must exist once created
-    for base_name in ("Dockerfile.base-cpu", "Dockerfile.base-gpu"):
+    # General base images and the deliberately narrow MuJoCo root must exist.
+    for base_name in ("Dockerfile.base-cpu", "Dockerfile.base-gpu", "Dockerfile.mujoco-base-gpu"):
         if base_name not in found_names:
             errors.append(f"Expected base Dockerfile {base_name!r} not found yet")
 
