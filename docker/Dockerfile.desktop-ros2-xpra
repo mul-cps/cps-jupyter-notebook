@@ -1,14 +1,13 @@
 # docker/Dockerfile.desktop-ros2-xpra
 #
-# Adds ROS 2 Jazzy desktop + VirtualGL/Xpra/XFCE4 on top of the
-# already-published pytorch-code image (which already has the full
-# PyTorch stack + shared JupyterLab/code-server bundle) instead of
-# reinstalling PyTorch and the shared bundle from scratch. See
+# Adds ROS 2 Jazzy and productivity tooling on the shared Xpra/XFCE/VirtualGL
+# desktop layer.  The common layer owns the desktop runtime and proxy support;
+# this child owns only ROS-specific and productivity additions.  See
 # docs/superpowers/plans/2026-08-03-consolidate-images.md.
 # =========================
 # Stage 0: base runtime
 # =========================
-ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base
 FROM ${BASE_IMAGE} AS base
 
 # Toggle optional heavy GUI apps (saves CI disk if disabled)
@@ -47,48 +46,13 @@ RUN set -eux; \
         $(. /etc/os-release && echo $UBUNTU_CODENAME) main" \
             > /etc/apt/sources.list.d/ros2.list
 
-# ---- VirtualGL via .deb + EGL/GL userland deps
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-        --mount=type=cache,target=/var/lib/apt,sharing=locked \
-        set -eux; \
-        apt-get update; \
-        apt-get install -y --no-install-recommends \
-            wget \
-            mesa-utils \
-            libglvnd0 libegl1 libgl1 \
-            libx11-6 libxext6 libxrender1 libxrandr2 libxi6 libxfixes3 \
-            libxdamage1 libxinerama1 libxcursor1 libxcomposite1 \
-            libsm6 libice6 libglib2.0-0; \
-        wget -q -O /tmp/virtualgl.deb https://github.com/VirtualGL/virtualgl/releases/download/3.1.4/virtualgl_3.1.4_amd64.deb; \
-        apt-get install -y /tmp/virtualgl.deb; \
-        rm -f /tmp/virtualgl.deb; \
-        rm -rf /var/lib/apt/lists/*
-
-# ---- Xpra repo (official, matches Ubuntu Noble)
-# NOTE: replaces TurboVNC/noVNC/websockify from the sibling
-# Dockerfile.desktop-ros2 -- Xpra's own HTML5 client + bundled web
-# server removes the separate noVNC+websockify process pair entirely,
-# and gives native OS clipboard sync instead of a manual sync textbox.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-        --mount=type=cache,target=/var/lib/apt,sharing=locked \
-        set -eux; \
-        wget -q -O /usr/share/keyrings/xpra.asc https://xpra.org/xpra.asc; \
-        echo "deb [signed-by=/usr/share/keyrings/xpra.asc] https://xpra.org/ noble main" \
-            > /etc/apt/sources.list.d/xpra.list; \
-        apt-get update; \
-        apt-get install -y --no-install-recommends xpra xpra-x11 xpra-html5; \
-        rm -rf /var/lib/apt/lists/*
-
 # ---- Desktop + ROS + tooling + productivity apps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         --mount=type=cache,target=/var/lib/apt,sharing=locked \
         set -eux; \
         apt-get update; \
         apt-get install -y --no-install-recommends \
-            # Desktop stack
-            dbus-x11 \
-            xfce4 \
-            xfce4-terminal \
+            # Desktop additions beyond the common Xpra/XFCE base
             xubuntu-icon-theme \
             supervisor \
             pulseaudio \
@@ -154,36 +118,6 @@ RUN set -eux; \
         rosdep init || true; \
         rosdep update || true
 
-# NOTE: jupyter_remote_desktop_proxy is VNC-specific and NOT used here --
-# the Xpra desktop is wired up via a c.ServerProxy.servers entry in the
-# cluster's jupyter_server_config.py (see the JupyterHub values.yaml in
-# cps-gpu-cluster / cit-teaching-platform), driving `xpra start` directly.
-# jupyter_server_proxy is still required as the mechanism that entry
-# uses, but it's already installed by pytorch-code's base-gpu ancestor,
-# so there's nothing left to install here.
-
-# Enable server extensions
-RUN set -eux; \
-        jupyter server extension enable --sys-prefix jupyter_server_proxy || true
-
-# ---- Auto-wrap VirtualGL EGL (users don't have to type vglrun)
-RUN set -eux; \
-        cat > /usr/local/bin/_vglwrap <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-# No GUI session => do nothing special
-if [[ -z "${DISPLAY:-}" ]]; then
-    exec "$@"
-fi
-export VGL_DISPLAY="${VGL_DISPLAY:-egl}"
-# No GPU visible => run normally
-if [[ ! -e /dev/nvidia0 && -z "${NVIDIA_VISIBLE_DEVICES:-}" ]]; then
-    exec "$@"
-fi
-exec vglrun -d "${VGL_DISPLAY}" "$@"
-EOF
-RUN chmod +x /usr/local/bin/_vglwrap
-
 # Optional shims for common apps (wrap only if present)
 #
 # Two real bugs found live (2026-07-24) with this mechanism as it existed
@@ -218,35 +152,6 @@ RUN set -ex; \
                 chmod +x "$real"; \
             fi; \
         done
-
-# ---- Xpra desktop startup script
-# xpra's own `start` command launches the X11 backend (Xvfb-based,
-# dummy driver -- no relation to Xvnc, no GLX-vs-driver segfault class
-# of bug like the TurboVNC stack hit) then execs this as the session
-# command. GPU-accelerated apps still go through the same _vglwrap
-# wrapper as the TurboVNC profile -- VirtualGL's EGL backend renders on
-# the real GPU and hands frames to whichever 2D display is active,
-# independent of whether that display is Xvnc or Xpra's Xvfb.
-RUN set -eux; \
-        cat > /usr/local/bin/start-xpra-desktop.sh <<'EOF'
-#!/bin/sh
-# xfce4-panel and xfwm4 persist window/panel geometry (absolute pixel
-# coordinates) to xfconf in the user's home directory, which is a
-# persistent per-user PVC that outlives any single session. Since this
-# is a remote desktop whose viewport size is renegotiated fresh every
-# time (different browser window, different monitor, Xpra's dynamic
-# resize), geometry saved from one session is never guaranteed valid
-# for the next -- confirmed live, 2026-07-24: taskbar/menus visible
-# correctly on load, then drifting off-screen once xfwm4/xfce4-panel
-# applied stale saved geometry. Clearing these two files before every
-# session start means the panel/window manager always initialize fresh
-# against the CURRENT screen size instead of carrying forward
-# potentially-mismatched state.
-rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
-rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml"
-exec dbus-launch --exit-with-session xfce4-session
-EOF
-RUN chmod +x /usr/local/bin/start-xpra-desktop.sh
 
 # Ensure before-notebook.d directory exists
 RUN mkdir -p /usr/local/bin/before-notebook.d

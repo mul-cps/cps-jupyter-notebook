@@ -1,0 +1,12 @@
+# Narrow GPU notebook root for the MuJoCo desktop family.
+#
+# Keep this intentionally close to the maintained Jupyter CUDA/PyTorch image:
+# course-specific code tooling, IDEs, copilot, and broad ML packages belong in
+# their separate descendants, never in the student MuJoCo profile.
+FROM quay.io/jupyter/pytorch-notebook:x86_64-cuda12-2026-02-09@sha256:257b2d2f821824b7b4c96a8b54a625a5427bc86b4563ec9d5c24f795bdd0a3eb
+
+USER root
+ENV PIP_ROOT_USER_ACTION=ignore
+
+WORKDIR /home/${NB_USER}/work
+USER ${NB_UID}

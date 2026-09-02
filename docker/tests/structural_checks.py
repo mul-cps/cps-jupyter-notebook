@@ -28,7 +28,10 @@ CONSOLIDATED_VARIANTS = {
     "Dockerfile.tf-code": "ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu",
     "Dockerfile.desktop-ros2": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
     "Dockerfile.comfyui": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
-    "Dockerfile.desktop-ros2-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
+    "Dockerfile.desktop-ros2-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base",
+    "Dockerfile.mujoco-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base",
+    "Dockerfile.pytorch-runtime-base": "ghcr.io/mul-cps/cps-jupyter-notebook-mujoco-base-gpu",
+    "Dockerfile.desktop-xpra-base": "ghcr.io/mul-cps/cps-jupyter-notebook:pytorch-runtime-base",
 }
 
 DUPLICATE_MARKERS = [
@@ -132,8 +135,32 @@ def main():
         check_no_duplicate_install(path)
         check_pip_cache_mount_present(path)
 
-    # base images must exist once created
-    for base_name in ("Dockerfile.base-cpu", "Dockerfile.base-gpu"):
+    desktop_xpra_base = DOCKER_DIR / "Dockerfile.desktop-xpra-base"
+    if desktop_xpra_base.exists():
+        desktop_xpra_text = desktop_xpra_base.read_text()
+        for required in ("xpra-html5", "jupyter_server_proxy", 'gpasswd -d "${NB_USER}" sudo'):
+            if required not in desktop_xpra_text:
+                errors.append(
+                    f"Dockerfile.desktop-xpra-base: missing required desktop contract {required!r}"
+                )
+
+    ros_xpra = DOCKER_DIR / "Dockerfile.desktop-ros2-xpra"
+    if ros_xpra.exists():
+        ros_xpra_text = ros_xpra.read_text()
+        for duplicate in (
+            "xpra-html5",
+            "virtualgl/releases",
+            "cat > /usr/local/bin/_vglwrap",
+            "cat > /usr/local/bin/start-xpra-desktop.sh",
+        ):
+            if duplicate in ros_xpra_text:
+                errors.append(
+                    "Dockerfile.desktop-ros2-xpra: repeats shared desktop "
+                    f"layer installation {duplicate!r}"
+                )
+
+    # General base images and the deliberately narrow MuJoCo root must exist.
+    for base_name in ("Dockerfile.base-cpu", "Dockerfile.base-gpu", "Dockerfile.mujoco-base-gpu"):
         if base_name not in found_names:
             errors.append(f"Expected base Dockerfile {base_name!r} not found yet")
 

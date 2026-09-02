@@ -10,7 +10,7 @@
 # Union of docker/Dockerfile.pytorch-code and docker/Dockerfile.tf-code's
 # previously-duplicated common portions
 # (docs/superpowers/plans/2026-08-03-consolidate-images.md).
-FROM docker.io/cschranz/gpu-jupyter:v1.10_cuda-12.9_ubuntu-24.04_slim AS base
+FROM quay.io/jupyter/pytorch-notebook:x86_64-cuda12-2026-02-09@sha256:257b2d2f821824b7b4c96a8b54a625a5427bc86b4563ec9d5c24f795bdd0a3eb AS base
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

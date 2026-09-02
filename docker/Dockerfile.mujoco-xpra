@@ -1,0 +1,16 @@
+# Minimal MuJoCo + Xpra desktop, derived from the shared desktop runtime.
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:latest-desktop-xpra-base
+FROM ${BASE_IMAGE}
+
+USER root
+ENV MUJOCO_GL=egl \
+    PYOPENGL_PLATFORM=egl \
+    NVIDIA_DRIVER_CAPABILITIES=compute,graphics,utility
+
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    set -eux; \
+    pip install --upgrade --no-cache-dir mujoco gymnasium; \
+    rm -rf /root/.cache
+
+USER ${NB_UID}
+WORKDIR /home/${NB_USER}/work
