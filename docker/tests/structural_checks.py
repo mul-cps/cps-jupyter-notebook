@@ -144,6 +144,21 @@ def main():
                     f"Dockerfile.desktop-xpra-base: missing required desktop contract {required!r}"
                 )
 
+    ros_xpra = DOCKER_DIR / "Dockerfile.desktop-ros2-xpra"
+    if ros_xpra.exists():
+        ros_xpra_text = ros_xpra.read_text()
+        for duplicate in (
+            "xpra-html5",
+            "virtualgl/releases",
+            "cat > /usr/local/bin/_vglwrap",
+            "cat > /usr/local/bin/start-xpra-desktop.sh",
+        ):
+            if duplicate in ros_xpra_text:
+                errors.append(
+                    "Dockerfile.desktop-ros2-xpra: repeats shared desktop "
+                    f"layer installation {duplicate!r}"
+                )
+
     # base images must exist once created
     for base_name in ("Dockerfile.base-cpu", "Dockerfile.base-gpu"):
         if base_name not in found_names:
