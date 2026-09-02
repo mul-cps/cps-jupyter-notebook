@@ -87,6 +87,7 @@ case "$VARIANT" in
   mujoco-xpra)
     check_cmd "torch is importable" python3 -c "import torch, torchvision"
     check_cmd "MuJoCo is importable" python3 -c "import mujoco, gymnasium"
+    check_cmd "MuJoCo version helper" mujoco -v
     check_cmd "Xpra binary present" sh -c "command -v xpra"
     check_cmd "VirtualGL binary present" sh -c "command -v vglrun"
     check_cmd "EGL environment is configured" sh -c '[ "$MUJOCO_GL" = egl ] && [ "$PYOPENGL_PLATFORM" = egl ]'

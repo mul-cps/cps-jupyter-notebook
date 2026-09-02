@@ -12,5 +12,27 @@ RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     pip install --upgrade --no-cache-dir mujoco gymnasium; \
     rm -rf /root/.cache
 
+# The maintained Python bindings intentionally do not ship a `mujoco` shell
+# command.  Provide a discoverable version helper without implying a separate
+# native GUI binary; rendering is exposed through the Python API and Xpra.
+RUN cat > /usr/local/bin/mujoco <<'EOF'
+#!/bin/sh
+set -eu
+case "${1:-}" in
+  -v|--version)
+    exec python3 -c 'import mujoco; print(mujoco.__version__)'
+    ;;
+  "")
+    echo "MuJoCo Python bindings are installed. Use: python -c 'import mujoco; print(mujoco.__version__)'" >&2
+    echo "For interactive rendering, use mujoco.viewer from Python; launch Desktop (Xpra) from JupyterLab." >&2
+    ;;
+  *)
+    echo "usage: mujoco [-v|--version]" >&2
+    exit 2
+    ;;
+esac
+EOF
+RUN chmod 0755 /usr/local/bin/mujoco
+
 USER ${NB_UID}
 WORKDIR /home/${NB_USER}/work
