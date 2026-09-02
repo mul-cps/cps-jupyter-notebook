@@ -1,0 +1,55 @@
+# Common GPU Xpra desktop layer shared by MuJoCo and ROS desktop sessions.
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook:pytorch-runtime-base
+FROM ${BASE_IMAGE}
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+USER root
+ENV DEBIAN_FRONTEND=noninteractive \
+    VGL_DISPLAY=egl
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -eux; \
+    rm -f /etc/apt/apt.conf.d/docker-clean; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates curl wget gnupg2 \
+        libglvnd0 libegl1 libgl1 mesa-utils \
+        libx11-6 libxext6 libxrender1 libxrandr2 libxi6 libxfixes3 \
+        libxdamage1 libxinerama1 libxcursor1 libxcomposite1 \
+        libsm6 libice6 libglib2.0-0 \
+        dbus-x11 xfce4 xfce4-terminal; \
+    wget -q -O /usr/share/keyrings/xpra.asc https://xpra.org/xpra.asc; \
+    echo "deb [signed-by=/usr/share/keyrings/xpra.asc] https://xpra.org/ noble main" \
+        > /etc/apt/sources.list.d/xpra.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends xpra xpra-x11 xpra-html5; \
+    wget -q -O /tmp/virtualgl.deb https://github.com/VirtualGL/virtualgl/releases/download/3.1.4/virtualgl_3.1.4_amd64.deb; \
+    apt-get install -y /tmp/virtualgl.deb; \
+    rm -f /tmp/virtualgl.deb; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN jupyter server extension enable --sys-prefix jupyter_server_proxy || true
+
+RUN cat > /usr/local/bin/_vglwrap <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ -z "${DISPLAY:-}" ]] || [[ ! -e /dev/nvidia0 && -z "${NVIDIA_VISIBLE_DEVICES:-}" ]]; then
+    exec "$@"
+fi
+exec vglrun -d "${VGL_DISPLAY:-egl}" "$@"
+EOF
+RUN chmod +x /usr/local/bin/_vglwrap
+
+RUN cat > /usr/local/bin/start-xpra-desktop.sh <<'EOF'
+#!/bin/sh
+rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+rm -f "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml"
+exec dbus-launch --exit-with-session xfce4-session
+EOF
+RUN chmod +x /usr/local/bin/start-xpra-desktop.sh
+
+# The student desktop must not inherit the local image family's sudo grant.
+RUN gpasswd -d "${NB_USER}" sudo || true
+
+WORKDIR /home/${NB_USER}/work

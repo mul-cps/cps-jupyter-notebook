@@ -29,6 +29,8 @@ CONSOLIDATED_VARIANTS = {
     "Dockerfile.desktop-ros2": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
     "Dockerfile.comfyui": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
     "Dockerfile.desktop-ros2-xpra": "ghcr.io/mul-cps/cps-jupyter-notebook:latest-pytorch-code",
+    "Dockerfile.pytorch-runtime-base": "ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu",
+    "Dockerfile.desktop-xpra-base": "ghcr.io/mul-cps/cps-jupyter-notebook:pytorch-runtime-base",
 }
 
 DUPLICATE_MARKERS = [
@@ -131,6 +133,15 @@ def main():
         check_from_lines(path, expected_base)
         check_no_duplicate_install(path)
         check_pip_cache_mount_present(path)
+
+    desktop_xpra_base = DOCKER_DIR / "Dockerfile.desktop-xpra-base"
+    if desktop_xpra_base.exists():
+        desktop_xpra_text = desktop_xpra_base.read_text()
+        for required in ("xpra-html5", "jupyter_server_proxy", 'gpasswd -d "${NB_USER}" sudo'):
+            if required not in desktop_xpra_text:
+                errors.append(
+                    f"Dockerfile.desktop-xpra-base: missing required desktop contract {required!r}"
+                )
 
     # base images must exist once created
     for base_name in ("Dockerfile.base-cpu", "Dockerfile.base-gpu"):

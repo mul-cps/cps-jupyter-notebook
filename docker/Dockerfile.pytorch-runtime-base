@@ -1,0 +1,9 @@
+# Shared PyTorch runtime layer. The pinned Jupyter upstream base already ships
+# torch and torchvision; this stage makes that contract explicit for children.
+ARG BASE_IMAGE=ghcr.io/mul-cps/cps-jupyter-notebook-base-gpu:latest
+FROM ${BASE_IMAGE}
+
+USER root
+RUN python3 -c "import torch, torchvision"
+
+WORKDIR /home/${NB_USER}/work
