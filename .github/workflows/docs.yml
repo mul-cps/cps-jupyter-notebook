@@ -34,7 +34,7 @@ jobs:
     container:
       image: python:3.12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install mkdocs-material
         run: pip install mkdocs-material
