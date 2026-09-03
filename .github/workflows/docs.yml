@@ -54,7 +54,7 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     timeout-minutes: 10
     container:
-      image: ubuntu:24.04
+      image: ubuntu:26.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
