@@ -42,3 +42,7 @@ class ReleaseInventoryTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'variant'):release.validate(lock,ROOT)
  def test_docs_public_pr_uses_only_hosted_runners(self):
   self.assertNotIn('self-hosted',(ROOT/'.github/workflows/docs.yml').read_text())
+ def test_committed_inventory_matches_all_runtime_dockerfiles(self):
+  import json
+  actual={'standard-cpu' if p.name=='Dockerfile' else p.name.removeprefix('Dockerfile.') for p in (ROOT/'docker').glob('Dockerfile*') if p.name!='Dockerfile.compute-runtime'}
+  self.assertEqual(set(json.loads((ROOT/'release/variants.json').read_text())),actual)
