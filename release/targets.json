@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "release": "0.1.0",
+  "sourceTag": "v0.1.0",
+  "computeVersion": "0.1.0",
+  "qualified": false,
+  "variants": ["standard-cpu", "base-cpu", "base-gpu", "mujoco-base-gpu", "pytorch-runtime-base", "pytorch-code", "tf-code", "desktop-xpra-base", "desktop-ros2", "desktop-ros2-xpra", "mujoco-xpra", "comfyui"],
+  "baseDigests": {},
+  "wheelFiles": {},
+  "policyHash": null
+}

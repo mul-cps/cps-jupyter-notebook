@@ -24,6 +24,7 @@ env:
 
 jobs:
   build-bases:
+    if: github.event_name != 'pull_request'
     runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
@@ -91,6 +92,7 @@ jobs:
 
   build-pytorch-runtime:
     needs: build-bases
+    if: github.event_name != 'pull_request'
     runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
@@ -173,6 +175,7 @@ jobs:
 
   build-gpu-frameworks:
     needs: build-pytorch-runtime
+    if: github.event_name != 'pull_request'
     runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
@@ -224,6 +227,7 @@ jobs:
 
   build-dependents:
     needs: build-gpu-frameworks
+    if: github.event_name != 'pull_request'
     runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
