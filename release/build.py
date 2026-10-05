@@ -20,6 +20,10 @@ def validate(lock, wheelhouse):
         raise ValueError('source tag must identify the release')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}', lock.get('policyHash') or ''):
         raise ValueError('reviewed policy hash required')
+    required_variants=json.loads((ROOT/'release/variants.json').read_text())
+    variants=lock.get('variants')
+    if not isinstance(variants,list) or any(not isinstance(v,str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*',v) for v in variants):raise ValueError('Unsafe variant identifier')
+    if len(set(variants))!=len(variants) or set(variants)!=set(required_variants):raise ValueError('Every committed notebook variant is required exactly once')
     if set(lock['baseDigests']) != set(lock['variants']):
         raise ValueError('every variant requires a reviewed base digest')
     for image in lock['baseDigests'].values():

@@ -24,12 +24,10 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-# containerMode: kubernetes (the in-cluster self-hosted runner) requires
-# every job to declare a container: image -- there is no bare execution
-# environment.
+# All documentation jobs use hosted runners; public PR content never runs on cluster workers.
 jobs:
   build-docs:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
       image: python:3.12
@@ -51,7 +49,7 @@ jobs:
   deploy-docs:
     if: github.ref == 'refs/heads/main'
     needs: build-docs
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
       image: ubuntu:24.04

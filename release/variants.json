@@ -1,0 +1,14 @@
+[
+  "standard-cpu",
+  "base-cpu",
+  "base-gpu",
+  "mujoco-base-gpu",
+  "pytorch-runtime-base",
+  "pytorch-code",
+  "tf-code",
+  "desktop-xpra-base",
+  "desktop-ros2",
+  "desktop-ros2-xpra",
+  "mujoco-xpra",
+  "comfyui"
+]

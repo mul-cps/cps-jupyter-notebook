@@ -14,7 +14,9 @@ class ReleaseTests(unittest.TestCase):
   self.assertIn('jupyter_collaboration',text); self.assertIn('@cps/compute-jupyterlab',text)
  def test_wheels_are_hash_verified_and_include_rtc_addon(self):
   import tempfile, zipfile, hashlib
-  lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':['cpu'],'baseDigests':{'cpu':'registry/base@sha256:'+'b'*64},'wheelFiles':{}}
+  import json
+  variants=json.loads((ROOT/'release/variants.json').read_text())
+  lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
   with tempfile.TemporaryDirectory() as directory:
    wheels=Path(directory)
    for name in ('cps-compute','jupyter-collaboration'):
@@ -30,3 +32,13 @@ class ReleaseTests(unittest.TestCase):
   text=(ROOT/'.github/workflows/docker-publish.yml').read_text()
   self.assertIn("if: github.event_name != 'pull_request'",text)
 if __name__=='__main__': unittest.main()
+
+
+class ReleaseInventoryTests(unittest.TestCase):
+ def test_lock_cannot_omit_existing_variants_or_escape_paths(self):
+  import json
+  lock=json.loads((ROOT/'release/targets.json').read_text())
+  lock['variants']=['../escape'];lock['baseDigests']={'../escape':'registry/base@sha256:'+'b'*64};lock['policyHash']='sha256:'+'a'*64
+  with self.assertRaisesRegex(ValueError,'variant'):release.validate(lock,ROOT)
+ def test_docs_public_pr_uses_only_hosted_runners(self):
+  self.assertNotIn('self-hosted',(ROOT/'.github/workflows/docs.yml').read_text())
