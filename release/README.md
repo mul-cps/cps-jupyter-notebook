@@ -38,6 +38,28 @@ the scanner checksum, image binding, package count and both SBOM checksums.
 `SHA256SUMS` includes the standalone files; publish them together with the image
 and provenance. This option does not waive runtime or release qualification.
 
+Publish each standalone pair as an OCI referrer to the exact image index digest
+after image publication. Use a checksum-verified ORAS release and the existing
+registry credential file; never put credentials in command arguments. From the
+artifact directory, for example:
+
+```bash
+oras attach --registry-config "$REGISTRY_AUTH_FILE" \
+  --artifact-type application/spdx+json --format json \
+  --export-manifest VARIANT.sbom-referrer.json \
+  REGISTRY/IMAGE@sha256:VERIFIED_INDEX_DIGEST \
+  VARIANT.sbom.spdx.json:application/spdx+json \
+  VARIANT.sbom.syft.json:application/vnd.syft+json
+```
+
+Retain the returned referrer digest and verify its manifest `subject.digest`
+matches the image index. Pull that referrer by digest into a separate directory
+with `oras pull --output DIRECTORY REGISTRY/IMAGE@sha256:REFERRER_DIGEST` and
+compare both downloaded file hashes against `release.json` and `SHA256SUMS`.
+An image push alone does not publish these documents. Archive the attachments
+and checksums with the release assets as well. See the canonical
+[ORAS attach documentation](https://oras.land/docs/commands/oras_attach/).
+
 Existing runtime Dockerfiles are legacy images. The compute overlay is the
 released runtime route; target metadata is outside automatic publishing.
 RTC presence and addon packaging are checked during build; collaboration,
