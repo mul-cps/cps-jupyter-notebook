@@ -8,17 +8,28 @@ FROM ${BASE_IMAGE}
 
 USER root
 
+# TensorFlow 2.21 requires NCCL >=2.27.7, while the inherited Torch 2.9/2.10
+# requires NCCL 2.27.5. Align the inherited stack with pytorch-code first.
+RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
+    pip install --upgrade \
+    "torch==2.11.*" \
+    "torchvision==0.26.*" \
+    "torchaudio==2.11.*" \
+    --index-url https://download.pytorch.org/whl/cu129
+
 # TensorFlow GPU stack (no addons)
 RUN --mount=type=cache,target=/home/${NB_USER}/.cache/pip \
     pip install --upgrade \
     "tensorflow[and-cuda]==2.21.*" \
+    "nvidia-nccl-cu12==2.28.9" \
     tensorflow-datasets \
     keras \
     tf-keras \
     scikit-learn \
     pandas \
     seaborn \
-    matplotlib
+    matplotlib && \
+    python -m pip check
 
 USER root
 WORKDIR /home/${NB_USER}/work
