@@ -49,12 +49,36 @@ def validate(lock, wheelhouse):
     if 'jupyter-collaboration' not in packages: raise ValueError('pinned RTC wheel required')
     return sorted(requirements)
 
+def build_command(lock, variant, revision, context, output, buildctl_address=None):
+    labels = {'org.opencontainers.image.version': lock['release'],
+              'org.opencontainers.image.revision': revision,
+              'compute.cps.unileoben.ac.at/policy-hash': lock['policyHash']}
+    metadata = str(output / (variant + '.metadata.json'))
+    destination = 'type=oci,dest=' + str(output / (variant + '.oci.tar'))
+    if buildctl_address:
+        command = ['buildctl', '--addr', buildctl_address, 'build',
+                   '--frontend', 'dockerfile.v0', '--local', 'context=' + str(context),
+                   '--local', 'dockerfile=' + str(context), '--opt', 'platform=linux/amd64',
+                   '--opt', 'force-network-mode=none', '--opt', 'attest:sbom=',
+                   '--opt', 'attest:provenance=mode=max', '--opt',
+                   'build-arg:BASE_IMAGE=' + lock['baseDigests'][variant]]
+        for name, value in labels.items(): command.extend(['--opt', 'label:' + name + '=' + value])
+    else:
+        command = ['docker', 'buildx', 'build', '--network=none', '--platform=linux/amd64',
+                   '--sbom=true', '--provenance=mode=max', '--build-arg',
+                   'BASE_IMAGE=' + lock['baseDigests'][variant]]
+        for name, value in labels.items(): command.extend(['--label', name + '=' + value])
+    command.extend(['--metadata-file', metadata, '--output', destination])
+    if not buildctl_address: command.append(str(context))
+    return command
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--lock',type=Path,default=ROOT/'release/targets.json')
     parser.add_argument('--wheelhouse',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--build',action='store_true')
+    parser.add_argument('--buildctl-address', help='Use buildctl directly, e.g. podman-container://private-builder')
     args=parser.parse_args(); lock=json.loads(args.lock.read_text())
     requirements=validate(lock,args.wheelhouse)
     revision=subprocess.check_output(['git','rev-parse',lock['sourceTag']+'^{commit}'],cwd=ROOT,text=True).strip()
@@ -69,10 +93,7 @@ def main():
         (wheels/'requirements.txt').write_text('\n'.join(requirements)+'\n')
         shutil.copyfile(ROOT/'docker/Dockerfile.compute-runtime',context/'Dockerfile')
         for variant in lock['variants']:
-            subprocess.run(['docker','buildx','build','--network=none','--platform=linux/amd64','--sbom=true','--provenance=mode=max',
-                '--build-arg','BASE_IMAGE='+lock['baseDigests'][variant], '--label','org.opencontainers.image.version='+lock['release'],
-                '--label','org.opencontainers.image.revision='+revision,'--label','compute.cps.unileoben.ac.at/policy-hash='+lock['policyHash'],
-                '--metadata-file',str(args.output/(variant+'.metadata.json')),'--output','type=oci,dest='+str(args.output/(variant+'.oci.tar')),str(context)],check=True)
+            subprocess.run(build_command(lock,variant,revision,context,args.output,args.buildctl_address),check=True)
     inventory={**lock,'sourceRevision':revision,'images':{}}
     for variant in lock['variants']:
         metadata=json.loads((args.output/(variant+'.metadata.json')).read_text())

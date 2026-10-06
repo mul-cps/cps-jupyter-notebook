@@ -5,6 +5,14 @@ ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('release',ROOT/'release/build.py')
 release=importlib.util.module_from_spec(spec); spec.loader.exec_module(release)
 class ReleaseTests(unittest.TestCase):
+ def test_buildctl_command_preserves_offline_artifact_contract(self):
+  self.assertTrue(hasattr(release, 'build_command'), 'direct BuildKit runner missing')
+  lock={'release':'0.1.0','policyHash':'sha256:'+'a'*64,'baseDigests':{'cpu':'registry/base@sha256:'+'b'*64}}
+  command=release.build_command(lock,'cpu','reviewed',Path('/context'),Path('/output'),'podman-container://private-builder')
+  self.assertEqual(command[:3],['buildctl','--addr','podman-container://private-builder'])
+  for required in ('force-network-mode=none','attest:sbom=','attest:provenance=mode=max','build-arg:BASE_IMAGE='+lock['baseDigests']['cpu'],'type=oci,dest=/output/cpu.oci.tar'):
+   self.assertIn(required,command)
+
  def test_unqualified_defaults_cannot_build(self):
   import json
   with self.assertRaisesRegex(ValueError,'policy hash'): release.validate(json.loads((ROOT/'release/targets.json').read_text()),ROOT)

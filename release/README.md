@@ -15,6 +15,14 @@ and provenance attestations, immutable image digests and SHA256SUMS. It does not
 publish images, create releases or execute GPUs. Tags are created only after the
 platform acceptance gates, source review and release qualification succeed.
 
+For a private BuildKit daemon, add `--buildctl-address ADDRESS` to the same
+command, for example `podman-container://cps-notebook-buildkit`. This uses
+`buildctl` directly rather than Docker Buildx, while retaining offline RUN
+execution, OCI output, SBOM/provenance attestations and metadata files. All
+source-tag, clean-checkout, digest and wheelhouse gates still apply. Use only
+reviewed inputs with the private operator builder; public PRs remain on hosted
+validation runners.
+
 Existing runtime Dockerfiles are legacy images. The compute overlay is the
 released runtime route; target metadata is outside automatic publishing.
 RTC presence and addon packaging are checked during build; collaboration,
