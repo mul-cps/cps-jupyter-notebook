@@ -23,6 +23,21 @@ source-tag, clean-checkout, digest and wheelhouse gates still apply. Use only
 reviewed inputs with the private operator builder; public PRs remain on hosted
 validation runners.
 
+For large images whose SPDX document exceeds BuildKit's 80 MiB embedded
+attestation limit, add `--standalone-sbom --syft /path/to/syft
+--syft-sha256 REVIEWED_EXECUTABLE_SHA256`. Verify the scanner's official release
+archive checksum before extracting it and reviewing the executable checksum.
+Provenance remains embedded; full package/file cataloging produces separate
+SPDX and native Syft JSON documents beside each OCI archive. The scanner's
+configuration is isolated from ambient Syft settings, and its archive-entry
+limit is bounded at 16 GiB for the large reviewed CUDA layers.
+
+The build fails if scanning fails, the SBOM source differs from the OCI image,
+or the SPDX package inventory omits native scan results. `release.json` records
+the scanner checksum, image binding, package count and both SBOM checksums.
+`SHA256SUMS` includes the standalone files; publish them together with the image
+and provenance. This option does not waive runtime or release qualification.
+
 Existing runtime Dockerfiles are legacy images. The compute overlay is the
 released runtime route; target metadata is outside automatic publishing.
 RTC presence and addon packaging are checked during build; collaboration,

@@ -54,3 +54,49 @@ class ReleaseInventoryTests(unittest.TestCase):
   import json
   actual={'standard-cpu' if p.name=='Dockerfile' else p.name.removeprefix('Dockerfile.') for p in (ROOT/'docker').glob('Dockerfile*') if p.name!='Dockerfile.compute-runtime'}
   self.assertEqual(set(json.loads((ROOT/'release/variants.json').read_text())),actual)
+
+class StandaloneSbomTests(unittest.TestCase):
+ def test_large_sbom_mode_keeps_provenance_and_offline_builds(self):
+  import inspect
+  self.assertIn('standalone_sbom',inspect.signature(release.build_command).parameters)
+  lock={'release':'0.1.0','policyHash':'sha256:'+'a'*64,'baseDigests':{'cpu':'registry/base@sha256:'+'b'*64}}
+  for address in (None,'podman-container://private-builder'):
+   command=release.build_command(lock,'cpu','reviewed',Path('/context'),Path('/output'),address,standalone_sbom=True)
+   self.assertNotIn('attest:sbom=',command);self.assertNotIn('--sbom=true',command)
+   self.assertIn('attest:provenance=mode=max' if address else '--provenance=mode=max',command)
+   self.assertIn('force-network-mode=none' if address else '--network=none',command)
+
+ def fixture(self, directory):
+  import hashlib,io,json,tarfile
+  root=Path(directory);archive=root/'cpu.oci.tar'
+  config=b'{}';config_digest='sha256:'+hashlib.sha256(config).hexdigest()
+  manifest=json.dumps({'config':{'digest':config_digest},'layers':[]}).encode();manifest_digest='sha256:'+hashlib.sha256(manifest).hexdigest()
+  index=json.dumps({'manifests':[{'digest':manifest_digest,'platform':{'architecture':'amd64','os':'linux'}}]}).encode()
+  with tarfile.open(archive,'w') as target:
+   for name,data in [('index.json',index),('blobs/sha256/'+config_digest.split(':')[1],config),('blobs/sha256/'+manifest_digest.split(':')[1],manifest)]:
+    info=tarfile.TarInfo(name);info.size=len(data);target.addfile(info,io.BytesIO(data))
+  native=root/'cpu.sbom.syft.json';spdx=root/'cpu.sbom.spdx.json'
+  native.write_text(json.dumps({'source':{'metadata':{'imageID':config_digest,'manifestDigest':manifest_digest}},'artifacts':[{'name':'cps-compute','version':'0.1.0'}]}))
+  spdx.write_text(json.dumps({'spdxVersion':'SPDX-2.3','packages':[{'name':'cps-compute','versionInfo':'0.1.0'}]}))
+  return archive,native,spdx
+
+ def test_standalone_sbom_rejects_other_image_and_missing_packages(self):
+  import tempfile,json
+  self.assertTrue(callable(getattr(release,'verify_standalone_sbom',None)),'standalone SBOM binding verifier missing')
+  with tempfile.TemporaryDirectory() as directory:
+   archive,native,spdx=self.fixture(directory)
+   result=release.verify_standalone_sbom(archive,native,spdx)
+   self.assertEqual(result['packages'],1);self.assertEqual(len(result['sha256']),64)
+   value=json.loads(native.read_text());value['source']['metadata']['imageID']='sha256:'+'f'*64;native.write_text(json.dumps(value))
+   with self.assertRaisesRegex(ValueError,'image'):release.verify_standalone_sbom(archive,native,spdx)
+   archive,native,spdx=self.fixture(directory);value=json.loads(spdx.read_text());value['packages']=[];spdx.write_text(json.dumps(value))
+   with self.assertRaisesRegex(ValueError,'package'):release.verify_standalone_sbom(archive,native,spdx)
+
+ def test_scanner_checksum_is_required_before_execution(self):
+  import tempfile
+  self.assertTrue(callable(getattr(release,'generate_standalone_sbom',None)),'standalone SBOM generation missing')
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);tool=root/'untrusted-scanner';marker=root/'executed'
+   tool.write_text('#!/bin/sh\ntouch '+str(marker)+'\n');tool.chmod(0o700)
+   with self.assertRaisesRegex(ValueError,'checksum'):release.generate_standalone_sbom(root/'cpu.oci.tar',tool,'0'*64)
+   self.assertFalse(marker.exists())
