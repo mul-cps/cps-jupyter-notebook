@@ -136,9 +136,16 @@ The ComfyUI proxy is configured in `comfyui_proxy_config.py`. Key settings:
 ### ComfyUI Settings
 
 ComfyUI runs with the following settings:
-- Listen address: `0.0.0.0` (allows proxy access)
+- Listen address: `127.0.0.1` (Jupyter Server Proxy connects locally)
 - Port: `8188`
 - Working directory: `/opt/comfyui`
+
+Inputs, outputs, temporary files, user settings and the SQLite database use
+`$HOME/.local/share/comfyui`. Set `COMFYUI_DATA_DIR` to another writable persistent
+directory when required. The startup script passes explicit paths, including the
+database URL, so the application does not write its default database into the
+image. Additional arguments are accepted for controlled qualification, for
+example `--cpu --disable-all-custom-nodes --disable-api-nodes`.
 
 You can customize ComfyUI by editing `/opt/comfyui/extra_model_paths.yaml` or other config files.
 
