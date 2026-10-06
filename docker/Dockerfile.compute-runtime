@@ -6,6 +6,7 @@ COPY release-wheelhouse/ /tmp/release-wheelhouse/
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-index --find-links=/tmp/release-wheelhouse --require-hashes \
       -r /tmp/release-wheelhouse/requirements.txt && \
+    python -m pip check && \
     python -c "import cps_compute, jupyter_collaboration; from pathlib import Path; import sys; assert (Path(sys.prefix)/'share/jupyter/labextensions/@cps/compute-jupyterlab/package.json').is_file()" && \
     rm -rf /tmp/release-wheelhouse
 USER ${NB_UID}
