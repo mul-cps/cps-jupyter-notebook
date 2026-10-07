@@ -129,3 +129,27 @@ class MultiAbiWheelhouseTests(unittest.TestCase):
    wheel('pyyaml','6.0.4','cp313-cp313-manylinux2014_x86_64')
    with self.assertRaisesRegex(ValueError,'version'):
     release.validate(lock,wheels)
+
+
+class VendoredWheelMetadataTests(unittest.TestCase):
+ def test_only_top_level_metadata_identifies_the_wheel(self):
+  import tempfile,zipfile,hashlib,json
+  variants=json.loads((ROOT/'release/variants.json').read_text())
+  lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
+  with tempfile.TemporaryDirectory() as directory:
+   wheels=Path(directory)
+   for name in ['cps_compute','jupyter_collaboration','bleach']:
+    filename=name+'-0.1.0-py3-none-any.whl'
+    with zipfile.ZipFile(wheels/filename,'w') as archive:
+     archive.writestr(name+'-0.1.0.dist-info/METADATA',f'Name: {name}\nVersion: 0.1.0\n')
+     archive.writestr(name+'/_vendor/other-9.dist-info/METADATA','Name: other\nVersion: 9\n')
+     if name=='cps_compute':archive.writestr('data/share/jupyter/labextensions/@cps/compute-jupyterlab/package.json','{}')
+    lock['wheelFiles'][filename]=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
+   requirements=release.validate(lock,wheels)
+   self.assertEqual(len(requirements),3)
+   self.assertFalse(any(r.startswith('other==') for r in requirements))
+   path=wheels/'bleach-0.1.0-py3-none-any.whl'
+   with zipfile.ZipFile(path,'a') as archive:
+    archive.writestr('second-0.1.0.dist-info/METADATA','Name: second\nVersion: 0.1.0\n')
+   lock['wheelFiles'][path.name]=hashlib.sha256(path.read_bytes()).hexdigest()
+   with self.assertRaisesRegex(ValueError,'metadata'):release.validate(lock,wheels)

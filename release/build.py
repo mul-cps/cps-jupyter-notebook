@@ -96,7 +96,7 @@ def validate(lock, wheelhouse):
         path = wheelhouse / filename
         if hashlib.sha256(path.read_bytes()).hexdigest() != digest: raise ValueError('wheel checksum mismatch')
         with zipfile.ZipFile(path) as archive:
-            meta = [n for n in archive.namelist() if n.endswith('.dist-info/METADATA')]
+            meta = [n for n in archive.namelist() if n.count('/') == 1 and n.endswith('.dist-info/METADATA')]
             if len(meta) != 1: raise ValueError('invalid wheel metadata')
             data = Parser().parsestr(archive.read(meta[0]).decode())
             name = re.sub(r'[-_.]+', '-', data['Name'].lower()); version = data['Version']

@@ -75,3 +75,9 @@ addon, RTC and dependency version set across the variant matrix without forcing
 incompatible binary wheels onto a different Python runtime. It does not prove
 that every variant has a compatible dependency closure: offline installation,
 `pip check`, startup and runtime qualification remain mandatory for each image.
+
+Wheel identity comes from exactly one top-level `.dist-info/METADATA` record.
+Nested metadata for vendored libraries (for example in Bleach or Setuptools)
+does not identify the outer wheel or introduce a separately pinned package.
+Missing or multiple top-level records remain invalid. This is required for the
+complete offline Jupyter/RTC dependency closure, not just the SDK wheel.
