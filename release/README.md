@@ -83,3 +83,5 @@ Missing or multiple top-level records remain invalid. This is required for the
 complete offline Jupyter/RTC dependency closure, not just the SDK wheel.
 
 OCI exports carry a per-variant registry name so BuildKit binds SBOM and provenance subjects to the image digest. Naming the export does not publish it; publication and qualification remain separate gates.
+
+The overlay forces reinstallation from hashed wheels, including when a base already has the same package version. Qualification must compare installed SDK modules and addon asset hashes, not versions alone.

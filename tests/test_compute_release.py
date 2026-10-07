@@ -24,6 +24,7 @@ class ReleaseTests(unittest.TestCase):
  def test_overlay_is_offline_and_requires_hashed_wheels(self):
   text=(ROOT/'docker/Dockerfile.compute-runtime').read_text()
   self.assertIn('--no-index',text); self.assertIn('--require-hashes',text)
+  self.assertIn('--force-reinstall',text)
   self.assertIn('jupyter_collaboration',text); self.assertIn('@cps/compute-jupyterlab',text)
  def test_wheels_are_hash_verified_and_include_rtc_addon(self):
   import tempfile, zipfile, hashlib
