@@ -90,7 +90,7 @@ def validate(lock, wheelhouse):
     for image in lock['baseDigests'].values():
         if not re.fullmatch(r'[^\s@]+@sha256:[a-f0-9]{64}', image): raise ValueError('immutable base digests required')
     if not lock['wheelFiles']: raise ValueError('released wheelhouse required')
-    requirements = []; packages = {}
+    hashes = {}; packages = {}
     for filename, digest in lock['wheelFiles'].items():
         if Path(filename).name != filename or not filename.endswith('.whl'): raise ValueError('unsafe wheel filename')
         path = wheelhouse / filename
@@ -99,16 +99,18 @@ def validate(lock, wheelhouse):
             meta = [n for n in archive.namelist() if n.endswith('.dist-info/METADATA')]
             if len(meta) != 1: raise ValueError('invalid wheel metadata')
             data = Parser().parsestr(archive.read(meta[0]).decode())
-            name = data['Name'].lower().replace('_','-'); version = data['Version']
-            if name in packages: raise ValueError('duplicate wheel package')
+            name = re.sub(r'[-_.]+', '-', data['Name'].lower()); version = data['Version']
+            if name in packages and packages[name] != version:
+                raise ValueError('conflicting wheel package versions')
             packages[name] = version
             if name == 'cps-compute' and not any('labextensions/@cps/compute-jupyterlab/package.json' in n for n in archive.namelist()):
                 raise ValueError('compute wheel must include the prebuilt addon')
-            requirements.append(f'{name}=={version} --hash=sha256:{digest}')
+            hashes.setdefault(name, set()).add(digest)
     if packages.get('cps-compute') != lock['computeVersion'].replace('-rc.', 'rc'):
         raise ValueError('compute wheel version must match release target')
     if 'jupyter-collaboration' not in packages: raise ValueError('pinned RTC wheel required')
-    return sorted(requirements)
+    return [f'{name}=={packages[name]} ' + ' '.join('--hash=sha256:'+digest for digest in sorted(hashes[name]))
+            for name in sorted(packages)]
 
 def build_command(lock, variant, revision, context, output, buildctl_address=None, *, standalone_sbom=False):
     labels = {'org.opencontainers.image.version': lock['release'],

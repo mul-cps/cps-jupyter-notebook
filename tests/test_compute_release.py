@@ -100,3 +100,32 @@ class StandaloneSbomTests(unittest.TestCase):
    tool.write_text('#!/bin/sh\ntouch '+str(marker)+'\n');tool.chmod(0o700)
    with self.assertRaisesRegex(ValueError,'checksum'):release.generate_standalone_sbom(root/'cpu.oci.tar',tool,'0'*64)
    self.assertFalse(marker.exists())
+
+
+class MultiAbiWheelhouseTests(unittest.TestCase):
+ def test_same_version_abi_wheels_share_requirement_and_conflicting_versions_fail(self):
+  import tempfile,zipfile,hashlib,json
+  variants=json.loads((ROOT/'release/variants.json').read_text())
+  lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
+  with tempfile.TemporaryDirectory() as directory:
+   wheels=Path(directory)
+   def wheel(name,version,tags):
+    filename=name+'-'+version+'-'+tags+'.whl'
+    with zipfile.ZipFile(wheels/filename,'w') as archive:
+     archive.writestr(name+'.dist-info/METADATA',f'Name: {name}\nVersion: {version}\n')
+     if name=='cps_compute':archive.writestr('data/share/jupyter/labextensions/@cps/compute-jupyterlab/package.json','{}')
+    digest=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
+    lock['wheelFiles'][filename]=digest
+    return digest
+   wheel('cps_compute','0.1.0','py3-none-any')
+   wheel('jupyter_collaboration','4.4.1','py3-none-any')
+   first=wheel('PyYAML','6.0.3','cp312-cp312-manylinux2014_x86_64')
+   second=wheel('pyyaml','6.0.3','cp313-cp313-manylinux2014_x86_64')
+   requirements=release.validate(lock,wheels)
+   line=next(r for r in requirements if r.startswith('pyyaml=='))
+   self.assertEqual(len(requirements),3)
+   self.assertIn('--hash=sha256:'+first,line)
+   self.assertIn('--hash=sha256:'+second,line)
+   wheel('pyyaml','6.0.4','cp313-cp313-manylinux2014_x86_64')
+   with self.assertRaisesRegex(ValueError,'version'):
+    release.validate(lock,wheels)

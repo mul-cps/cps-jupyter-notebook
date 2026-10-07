@@ -64,3 +64,14 @@ Existing runtime Dockerfiles are legacy images. The compute overlay is the
 released runtime route; target metadata is outside automatic publishing.
 RTC presence and addon packaging are checked during build; collaboration,
 visitor identity, fresh kernels, storage and GPU isolation require staging.
+
+A single reviewed wheelhouse may include multiple ABI wheels for the same
+canonical package name and version, such as CPython 3.12 and 3.13 binaries.
+The validator emits one pinned requirement with every reviewed wheel checksum;
+offline pip selects its compatible wheel under `--require-hashes`. Conflicting
+package versions still fail validation. Every wheel is checked, including ABI
+wheels not selected by the current interpreter. This preserves a common SDK,
+addon, RTC and dependency version set across the variant matrix without forcing
+incompatible binary wheels onto a different Python runtime. It does not prove
+that every variant has a compatible dependency closure: offline installation,
+`pip check`, startup and runtime qualification remain mandatory for each image.
