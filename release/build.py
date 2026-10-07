@@ -117,7 +117,9 @@ def build_command(lock, variant, revision, context, output, buildctl_address=Non
               'org.opencontainers.image.revision': revision,
               'compute.cps.unileoben.ac.at/policy-hash': lock['policyHash']}
     metadata = str(output / (variant + '.metadata.json'))
-    destination = 'type=oci,dest=' + str(output / (variant + '.oci.tar'))
+    # BuildKit leaves in-toto subjects empty for unnamed OCI exports.
+    image_name = 'ghcr.io/mul-cps/cps-jupyter-notebook:' + variant + '-' + lock['release']
+    destination = 'type=oci,name=' + image_name + ',dest=' + str(output / (variant + '.oci.tar'))
     if buildctl_address:
         command = ['buildctl', '--addr', buildctl_address, 'build',
                    '--frontend', 'dockerfile.v0', '--local', 'context=' + str(context),

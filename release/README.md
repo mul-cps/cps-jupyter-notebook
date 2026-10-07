@@ -81,3 +81,5 @@ Nested metadata for vendored libraries (for example in Bleach or Setuptools)
 does not identify the outer wheel or introduce a separately pinned package.
 Missing or multiple top-level records remain invalid. This is required for the
 complete offline Jupyter/RTC dependency closure, not just the SDK wheel.
+
+OCI exports carry a per-variant registry name so BuildKit binds SBOM and provenance subjects to the image digest. Naming the export does not publish it; publication and qualification remain separate gates.

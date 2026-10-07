@@ -10,8 +10,13 @@ class ReleaseTests(unittest.TestCase):
   lock={'release':'0.1.0','policyHash':'sha256:'+'a'*64,'baseDigests':{'cpu':'registry/base@sha256:'+'b'*64}}
   command=release.build_command(lock,'cpu','reviewed',Path('/context'),Path('/output'),'podman-container://private-builder')
   self.assertEqual(command[:3],['buildctl','--addr','podman-container://private-builder'])
-  for required in ('force-network-mode=none','attest:sbom=','attest:provenance=mode=max','build-arg:BASE_IMAGE='+lock['baseDigests']['cpu'],'type=oci,dest=/output/cpu.oci.tar'):
+  for required in ('force-network-mode=none','attest:sbom=','attest:provenance=mode=max','build-arg:BASE_IMAGE='+lock['baseDigests']['cpu'],'type=oci,name=ghcr.io/mul-cps/cps-jupyter-notebook:cpu-0.1.0,dest=/output/cpu.oci.tar'):
    self.assertIn(required,command)
+
+ def test_buildx_export_has_named_attestation_subject(self):
+  lock={'release':'1.0.0-rc.1','policyHash':'sha256:'+'a'*64,'baseDigests':{'base-cpu':'registry/base@sha256:'+'b'*64}}
+  command=release.build_command(lock,'base-cpu','reviewed',Path('/context'),Path('/output'))
+  self.assertIn('type=oci,name=ghcr.io/mul-cps/cps-jupyter-notebook:base-cpu-1.0.0-rc.1,dest=/output/base-cpu.oci.tar',command)
 
  def test_unqualified_defaults_cannot_build(self):
   import json
