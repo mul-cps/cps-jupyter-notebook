@@ -25,6 +25,9 @@ class ReleaseTests(unittest.TestCase):
   text=(ROOT/'docker/Dockerfile.compute-runtime').read_text()
   self.assertIn('--no-index',text); self.assertIn('--require-hashes',text)
   self.assertIn('--force-reinstall',text)
+  uninstall='python -m pip uninstall -y cps-compute cps-compute-jupyterlab'
+  self.assertIn(uninstall,text)
+  self.assertLess(text.index(uninstall),text.index('pip install'))
   self.assertIn('python /tmp/verify_compute_runtime.py',text)
   verification=(ROOT/'docker/verify_compute_runtime.py').read_text()
   self.assertIn('jupyter_collaboration',verification);self.assertIn('@cps/compute-jupyterlab',verification)

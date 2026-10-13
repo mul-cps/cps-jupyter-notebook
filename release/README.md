@@ -91,4 +91,7 @@ complete offline Jupyter/RTC dependency closure, not just the SDK wheel.
 
 OCI exports carry a per-variant registry name so BuildKit binds SBOM and provenance subjects to the image digest. Naming the export does not publish it; publication and qualification remain separate gates.
 
-The overlay forces reinstallation from hashed wheels, including when a base already has the same package version. Qualification must compare installed SDK modules and addon asset hashes, not versions alone.
+The overlay first uninstalls both compute distributions, then forces reinstallation
+from hashed wheels, including when a base already has the same package version.
+This prevents an old bundled SDK uninstall from deleting assets after the new
+Lab distribution installs them. Qualification must compare installed SDK modules and addon asset hashes, not versions alone.
