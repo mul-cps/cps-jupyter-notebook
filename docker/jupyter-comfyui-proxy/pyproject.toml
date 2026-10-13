@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = 'jupyter_comfyui_proxy'
-version = '1.0'
+version = '1.0.1'
 description = 'Jupyter Server Proxy configuration for ComfyUI'
 readme = 'README.md'
 requires-python = ">=3.8"
@@ -13,3 +17,9 @@ where = ["src"]
 
 [project.entry-points."jupyter_serverproxy_servers"]
 comfyui = "jupyter_comfyui_proxy:setup_comfyui"
+
+[project.scripts]
+jupyter-comfyui-launcher = "jupyter_comfyui_proxy.launcher:main"
+
+[tool.setuptools.package-data]
+jupyter_comfyui_proxy = ["icons/*.svg"]
