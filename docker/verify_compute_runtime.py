@@ -35,7 +35,7 @@ def verify():
     assert metadata.version('cps-compute-jupyterlab') == version, 'Compute co-release versions differ'
     package = Path(sys.prefix) / 'share/jupyter/labextensions/@cps/compute-jupyterlab/package.json'
     content = json.loads(package.read_text())
-    assert content['name'] == '@cps/compute-jupyterlab' and content['version'] == version, 'Installed addon identity differs'
+    assert content['name'] == '@cps/compute-jupyterlab' and content['version'].replace('-rc.', 'rc') == version, 'Installed addon identity differs'
 
 
 if __name__ == '__main__':

@@ -161,12 +161,12 @@ class VendoredWheelMetadataTests(unittest.TestCase):
    with self.assertRaisesRegex(ValueError,'metadata'):release.validate(lock,wheels)
 
 class ModularWheelClosureTests(unittest.TestCase):
- def fixture(self, directory, *, core_assets=False, addon_version='0.1.0', owner='cps-compute-jupyterlab', hub=False, hub_dependency=False, bad_record=False, runner_extra=True, missing_static=False, asset_version=None):
+ def fixture(self, directory, *, core_assets=False, addon_version='0.1.0', owner='cps-compute-jupyterlab', hub=False, hub_dependency=False, bad_record=False, runner_extra=True, missing_static=False, asset_version=None, core_version='0.1.0'):
   import base64,csv,hashlib,io,json,zipfile
   wheels=Path(directory)
   variants=json.loads((ROOT/'release/variants.json').read_text())
   lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
-  names=[('cps-compute','0.1.0'),(owner,addon_version),('jupyter-collaboration','4.4.1'),('papermill','2.6.0'),('ipykernel','6.30.1')]
+  names=[('cps-compute',core_version),(owner,addon_version),('jupyter-collaboration','4.4.1'),('papermill','2.6.0'),('ipykernel','6.30.1')]
   if hub:names.append(('cps-compute-hub','0.1.0'))
   for name,version in names:
    normalized=name.replace('-','_');stem=normalized+'-'+version
@@ -224,3 +224,22 @@ class ModularWheelClosureTests(unittest.TestCase):
    lock,wheels=self.fixture(directory)
    del lock['wheelFiles']['papermill-2.6.0-py3-none-any.whl']
    with self.assertRaisesRegex(ValueError,'runner'):release.validate(lock,wheels)
+
+
+class ReleaseCandidateVersionTests(unittest.TestCase):
+ def test_semver_release_and_pep440_wheels_are_the_same_corelease(self):
+  import tempfile
+  with tempfile.TemporaryDirectory() as directory:
+   lock,wheels=ModularWheelClosureTests().fixture(directory,core_version='1.0.0rc1',addon_version='1.0.0rc1',asset_version='1.0.0-rc.1')
+   lock.update(release='1.0.0-rc.1',sourceTag='v1.0.0-rc.1',computeVersion='1.0.0rc1')
+   requirements=release.validate(lock,wheels)
+   self.assertTrue(any(line.startswith('cps-compute[runner]==1.0.0rc1 ') for line in requirements))
+   self.assertTrue(any(line.startswith('cps-compute-jupyterlab==1.0.0rc1 ') for line in requirements))
+
+ def test_other_release_candidate_wheel_and_target_versions_are_rejected(self):
+  import tempfile
+  for addon_version,compute_version in [('1.0.0rc2','1.0.0rc1'),('1.0.0rc1','1.0.0rc2')]:
+   with self.subTest(addon_version=addon_version,compute_version=compute_version),tempfile.TemporaryDirectory() as directory:
+    lock,wheels=ModularWheelClosureTests().fixture(directory,core_version='1.0.0rc1',addon_version=addon_version)
+    lock.update(release='1.0.0-rc.1',sourceTag='v1.0.0-rc.1',computeVersion=compute_version)
+    with self.assertRaisesRegex(ValueError,'co-release'):release.validate(lock,wheels)

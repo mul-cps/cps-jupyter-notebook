@@ -91,7 +91,7 @@ def validate_lab_assets(archive, metadata_path, name, version):
     if len(manifests) != 1:
         raise ValueError('one prebuilt addon package.json required')
     package = json.loads(archive.read(manifests[0]))
-    if package.get('name') != '@cps/compute-jupyterlab' or package.get('version') != version:
+    if package.get('name') != '@cps/compute-jupyterlab' or package.get('version', '').replace('-rc.', 'rc') != version:
         raise ValueError('prebuilt addon name or version differs from wheel')
     record_path = metadata_path.removesuffix('METADATA') + 'RECORD'
     if archive.namelist().count(record_path) != 1:
@@ -114,7 +114,8 @@ def validate_lab_assets(archive, metadata_path, name, version):
 def validate(lock, wheelhouse):
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:-rc\.\d+)?', lock['release']):
         raise ValueError('explicit release version required')
-    if lock.get('computeVersion') != lock['release']:
+    release_version = lock['release'].replace('-rc.', 'rc')
+    if not isinstance(lock.get('computeVersion'), str) or lock['computeVersion'].replace('-rc.', 'rc') != release_version:
         raise ValueError('compute version must match co-release target')
     if lock['sourceTag'] != 'v' + lock['release']:
         raise ValueError('source tag must identify the release')

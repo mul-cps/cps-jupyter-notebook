@@ -6,7 +6,9 @@ central policy hash, and all released wheel files/SHA256 values. The wheelhouse
 must contain lean `cps-compute[runner]` 0.1.0, the separate
 `cps-compute-jupyterlab` 0.1.0 prebuilt addon wheel, a pinned RTC
 `jupyter-collaboration` wheel, Papermill, ipykernel, and the complete compatible
-dependency closure. The SDK, addon and target versions must match exactly.
+dependency closure. The SDK, addon and target versions must match exactly after RC normalization:
+release/tag `1.0.0-rc.1` / `v1.0.0-rc.1` corresponds to Python wheel
+`computeVersion` `1.0.0rc1` and npm addon version `1.0.0-rc.1`.
 Notebook runtimes exclude `cps-compute-hub`, including transitive requirements.
 The Lab wheel alone owns `@cps/compute-jupyterlab`; old SDK wheels bundling
 assets, duplicate or unrelated asset owners, and assets whose RECORD hashes
