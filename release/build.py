@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Offline, immutable notebook release overlays. No publishing or GPU execution."""
 import argparse
+import base64
+import csv
+import io
 import hashlib
 import json
 import os
@@ -74,9 +77,45 @@ def generate_standalone_sbom(archive, syft, checksum):
     result['scannerSha256'] = checksum
     return result
 
+def validate_lab_assets(archive, metadata_path, name, version):
+    """Verify the separately owned prebuilt extension against wheel RECORD."""
+    marker = 'labextensions/@cps/compute-jupyterlab/'
+    assets = [path for path in archive.namelist() if marker in path]
+    if name != 'cps-compute-jupyterlab':
+        if assets or any('cps_compute/labextension/' in path for path in archive.namelist()):
+            raise ValueError('Lab assets have the wrong distribution owner')
+        return
+    if not assets or not any(marker + 'static/' in path and path.endswith('.js') for path in assets):
+        raise ValueError('separate Lab wheel must include the prebuilt addon assets')
+    manifests = [path for path in assets if path.endswith(marker + 'package.json')]
+    if len(manifests) != 1:
+        raise ValueError('one prebuilt addon package.json required')
+    package = json.loads(archive.read(manifests[0]))
+    if package.get('name') != '@cps/compute-jupyterlab' or package.get('version') != version:
+        raise ValueError('prebuilt addon name or version differs from wheel')
+    record_path = metadata_path.removesuffix('METADATA') + 'RECORD'
+    if archive.namelist().count(record_path) != 1:
+        raise ValueError('Lab wheel RECORD required')
+    rows = list(csv.reader(io.StringIO(archive.read(record_path).decode())))
+    records = {}
+    for row in rows:
+        if len(row) != 3 or row[0] in records:
+            raise ValueError('invalid or duplicate Lab wheel RECORD')
+        records[row[0]] = row[1:]
+    for path in assets:
+        if path.endswith('/'):
+            continue
+        data = archive.read(path)
+        digest = base64.urlsafe_b64encode(hashlib.sha256(data).digest()).decode().rstrip('=')
+        if archive.namelist().count(path) != 1 or records.get(path) != ['sha256=' + digest, str(len(data))]:
+            raise ValueError('Lab asset differs from wheel RECORD')
+
+
 def validate(lock, wheelhouse):
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:-rc\.\d+)?', lock['release']):
         raise ValueError('explicit release version required')
+    if lock.get('computeVersion') != lock['release']:
+        raise ValueError('compute version must match co-release target')
     if lock['sourceTag'] != 'v' + lock['release']:
         raise ValueError('source tag must identify the release')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}', lock.get('policyHash') or ''):
@@ -103,13 +142,27 @@ def validate(lock, wheelhouse):
             if name in packages and packages[name] != version:
                 raise ValueError('conflicting wheel package versions')
             packages[name] = version
-            if name == 'cps-compute' and not any('labextensions/@cps/compute-jupyterlab/package.json' in n for n in archive.namelist()):
-                raise ValueError('compute wheel must include the prebuilt addon')
+            if name == 'cps-compute-hub' or any(
+                    re.sub(r'[-_.]+', '-', re.match(r'\s*([A-Za-z0-9_.-]+)', requirement).group(1).lower()) == 'cps-compute-hub'
+                    for requirement in data.get_all('Requires-Dist', [])):
+                raise ValueError('Hub package or dependency forbidden in notebook wheelhouse')
+            if name == 'cps-compute':
+                runner_dependencies = {
+                    re.sub(r'[-_.]+', '-', re.match(r'\s*([A-Za-z0-9_.-]+)', requirement).group(1).lower())
+                    for requirement in data.get_all('Requires-Dist', [])
+                    if re.search(r"extra\s*==\s*['\"]runner['\"]", requirement)
+                }
+                if 'runner' not in data.get_all('Provides-Extra', []) or not {'papermill', 'ipykernel'} <= runner_dependencies:
+                    raise ValueError('compute wheel must declare the runner extra')
+            validate_lab_assets(archive, meta[0], name, version)
             hashes.setdefault(name, set()).add(digest)
-    if packages.get('cps-compute') != lock['computeVersion'].replace('-rc.', 'rc'):
-        raise ValueError('compute wheel version must match release target')
+    for name in ('cps-compute', 'cps-compute-jupyterlab'):
+        if packages.get(name) != lock['computeVersion'].replace('-rc.', 'rc'):
+            raise ValueError(name + ' wheel version must match co-release target')
+    if not {'papermill', 'ipykernel'} <= packages.keys():
+        raise ValueError('pinned runner wheels required for batch runtime')
     if 'jupyter-collaboration' not in packages: raise ValueError('pinned RTC wheel required')
-    return [f'{name}=={packages[name]} ' + ' '.join('--hash=sha256:'+digest for digest in sorted(hashes[name]))
+    return [f'{name + ("[runner]" if name == "cps-compute" else "")}=={packages[name]} ' + ' '.join('--hash=sha256:'+digest for digest in sorted(hashes[name]))
             for name in sorted(packages)]
 
 def build_command(lock, variant, revision, context, output, buildctl_address=None, *, standalone_sbom=False):
@@ -164,6 +217,7 @@ def main():
         for filename in lock['wheelFiles']: shutil.copyfile(args.wheelhouse/filename,wheels/filename)
         (wheels/'requirements.txt').write_text('\n'.join(requirements)+'\n')
         shutil.copyfile(ROOT/'docker/Dockerfile.compute-runtime',context/'Dockerfile')
+        shutil.copyfile(ROOT/'docker/verify_compute_runtime.py',context/'verify_compute_runtime.py')
         for variant in lock['variants']:
             subprocess.run(build_command(lock,variant,revision,context,args.output,args.buildctl_address,standalone_sbom=args.standalone_sbom),check=True)
             if args.standalone_sbom:

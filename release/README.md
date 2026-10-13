@@ -3,8 +3,15 @@
 Target 0.1.0 is **not released or qualified**. Populate a reviewed copy of
 `targets.json` with every existing variant's immutable base image digest, the
 central policy hash, and all released wheel files/SHA256 values. The wheelhouse
-must contain cps-compute 0.1.0 with its prebuilt addon, a pinned RTC
-`jupyter-collaboration` wheel, and the complete compatible dependency closure.
+must contain lean `cps-compute[runner]` 0.1.0, the separate
+`cps-compute-jupyterlab` 0.1.0 prebuilt addon wheel, a pinned RTC
+`jupyter-collaboration` wheel, Papermill, ipykernel, and the complete compatible
+dependency closure. The SDK, addon and target versions must match exactly.
+Notebook runtimes exclude `cps-compute-hub`, including transitive requirements.
+The Lab wheel alone owns `@cps/compute-jupyterlab`; old SDK wheels bundling
+assets, duplicate or unrelated asset owners, and assets whose RECORD hashes
+differ fail validation. Installed asset ownership and hashes are checked again
+inside the offline overlay, alongside co-release versions and runner imports.
 No package download occurs inside the overlay build. The same wheelhouse and
 source tag are applied to all variants, including the narrow MuJoCo image.
 

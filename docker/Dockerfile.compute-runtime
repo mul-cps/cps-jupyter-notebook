@@ -3,11 +3,12 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 USER root
 COPY release-wheelhouse/ /tmp/release-wheelhouse/
+COPY verify_compute_runtime.py /tmp/verify_compute_runtime.py
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --force-reinstall --no-index --find-links=/tmp/release-wheelhouse --require-hashes \
       -r /tmp/release-wheelhouse/requirements.txt && \
     python -m pip check && \
-    python -c "import cps_compute, jupyter_collaboration; from pathlib import Path; import sys; assert (Path(sys.prefix)/'share/jupyter/labextensions/@cps/compute-jupyterlab/package.json').is_file()" && \
-    rm -rf /tmp/release-wheelhouse
+    python /tmp/verify_compute_runtime.py && \
+    rm -rf /tmp/release-wheelhouse /tmp/verify_compute_runtime.py
 USER ${NB_UID}
 WORKDIR /home/${NB_USER}/work

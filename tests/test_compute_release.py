@@ -25,7 +25,10 @@ class ReleaseTests(unittest.TestCase):
   text=(ROOT/'docker/Dockerfile.compute-runtime').read_text()
   self.assertIn('--no-index',text); self.assertIn('--require-hashes',text)
   self.assertIn('--force-reinstall',text)
-  self.assertIn('jupyter_collaboration',text); self.assertIn('@cps/compute-jupyterlab',text)
+  self.assertIn('python /tmp/verify_compute_runtime.py',text)
+  verification=(ROOT/'docker/verify_compute_runtime.py').read_text()
+  self.assertIn('jupyter_collaboration',verification);self.assertIn('@cps/compute-jupyterlab',verification)
+  self.assertIn('papermill',verification);self.assertIn('cps-compute-hub',verification)
  def test_wheels_are_hash_verified_and_include_rtc_addon(self):
   import tempfile, zipfile, hashlib
   import json
@@ -33,13 +36,9 @@ class ReleaseTests(unittest.TestCase):
   lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
   with tempfile.TemporaryDirectory() as directory:
    wheels=Path(directory)
-   for name in ('cps-compute','jupyter-collaboration'):
-    filename=name.replace('-','_')+'-0.1.0-py3-none-any.whl'
-    with zipfile.ZipFile(wheels/filename,'w') as archive:
-     archive.writestr(name.replace('-','_')+'.dist-info/METADATA',f'Name: {name}\nVersion: 0.1.0\n')
-     if name=='cps-compute':archive.writestr('data/share/jupyter/labextensions/@cps/compute-jupyterlab/package.json','{}')
-    lock['wheelFiles'][filename]=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
-   self.assertEqual(len(release.validate(lock,wheels)),2)
+   lock,wheels=ModularWheelClosureTests().fixture(directory)
+   self.assertEqual(len(release.validate(lock,wheels)),5)
+   filename=next(iter(lock['wheelFiles']))
    (wheels/filename).write_text('changed')
    with self.assertRaisesRegex(ValueError,'checksum'):release.validate(lock,wheels)
  def test_public_pr_never_runs_cluster_build_jobs(self):
@@ -119,17 +118,15 @@ class MultiAbiWheelhouseTests(unittest.TestCase):
     filename=name+'-'+version+'-'+tags+'.whl'
     with zipfile.ZipFile(wheels/filename,'w') as archive:
      archive.writestr(name+'.dist-info/METADATA',f'Name: {name}\nVersion: {version}\n')
-     if name=='cps_compute':archive.writestr('data/share/jupyter/labextensions/@cps/compute-jupyterlab/package.json','{}')
     digest=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
     lock['wheelFiles'][filename]=digest
     return digest
-   wheel('cps_compute','0.1.0','py3-none-any')
-   wheel('jupyter_collaboration','4.4.1','py3-none-any')
+   lock,wheels=ModularWheelClosureTests().fixture(directory)
    first=wheel('PyYAML','6.0.3','cp312-cp312-manylinux2014_x86_64')
    second=wheel('pyyaml','6.0.3','cp313-cp313-manylinux2014_x86_64')
    requirements=release.validate(lock,wheels)
    line=next(r for r in requirements if r.startswith('pyyaml=='))
-   self.assertEqual(len(requirements),3)
+   self.assertEqual(len(requirements),6)
    self.assertIn('--hash=sha256:'+first,line)
    self.assertIn('--hash=sha256:'+second,line)
    wheel('pyyaml','6.0.4','cp313-cp313-manylinux2014_x86_64')
@@ -144,18 +141,83 @@ class VendoredWheelMetadataTests(unittest.TestCase):
   lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
   with tempfile.TemporaryDirectory() as directory:
    wheels=Path(directory)
-   for name in ['cps_compute','jupyter_collaboration','bleach']:
+   lock,wheels=ModularWheelClosureTests().fixture(directory)
+   for name in ['bleach']:
     filename=name+'-0.1.0-py3-none-any.whl'
     with zipfile.ZipFile(wheels/filename,'w') as archive:
      archive.writestr(name+'-0.1.0.dist-info/METADATA',f'Name: {name}\nVersion: 0.1.0\n')
      archive.writestr(name+'/_vendor/other-9.dist-info/METADATA','Name: other\nVersion: 9\n')
-     if name=='cps_compute':archive.writestr('data/share/jupyter/labextensions/@cps/compute-jupyterlab/package.json','{}')
     lock['wheelFiles'][filename]=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
    requirements=release.validate(lock,wheels)
-   self.assertEqual(len(requirements),3)
+   self.assertEqual(len(requirements),6)
    self.assertFalse(any(r.startswith('other==') for r in requirements))
    path=wheels/'bleach-0.1.0-py3-none-any.whl'
    with zipfile.ZipFile(path,'a') as archive:
     archive.writestr('second-0.1.0.dist-info/METADATA','Name: second\nVersion: 0.1.0\n')
    lock['wheelFiles'][path.name]=hashlib.sha256(path.read_bytes()).hexdigest()
    with self.assertRaisesRegex(ValueError,'metadata'):release.validate(lock,wheels)
+
+class ModularWheelClosureTests(unittest.TestCase):
+ def fixture(self, directory, *, core_assets=False, addon_version='0.1.0', owner='cps-compute-jupyterlab', hub=False, hub_dependency=False, bad_record=False, runner_extra=True, missing_static=False, asset_version=None):
+  import base64,csv,hashlib,io,json,zipfile
+  wheels=Path(directory)
+  variants=json.loads((ROOT/'release/variants.json').read_text())
+  lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
+  names=[('cps-compute','0.1.0'),(owner,addon_version),('jupyter-collaboration','4.4.1'),('papermill','2.6.0'),('ipykernel','6.30.1')]
+  if hub:names.append(('cps-compute-hub','0.1.0'))
+  for name,version in names:
+   normalized=name.replace('-','_');stem=normalized+'-'+version
+   files={stem+'.dist-info/METADATA':f'Name: {name}\nVersion: {version}\n'.encode()}
+   if name=='cps-compute' and runner_extra:
+    files[stem+'.dist-info/METADATA']+=b'Provides-Extra: runner\nRequires-Dist: papermill>=2; extra == "runner"\nRequires-Dist: ipykernel>=6; extra == "runner"\n'
+   if hub_dependency and name=='jupyter-collaboration':files[stem+'.dist-info/METADATA']+=b'Requires-Dist: cps_compute_hub>=0.1\n'
+   if name==owner or (name=='cps-compute' and core_assets):
+    prefix=stem+'.data/data/share/jupyter/labextensions/@cps/compute-jupyterlab/'
+    files[prefix+'package.json']=json.dumps({'name':'@cps/compute-jupyterlab','version':asset_version or version}).encode()
+    if not missing_static:files[prefix+'static/remoteEntry.abc.js']=b'prebuilt addon'
+   rows=[]
+   for path,data in files.items():
+    digest=base64.urlsafe_b64encode(hashlib.sha256(data).digest()).decode().rstrip('=')
+    rows.append([path,'sha256='+('bad' if bad_record and path.endswith('.js') else digest),str(len(data))])
+   record=stem+'.dist-info/RECORD';rows.append([record,'','']);buffer=io.StringIO();csv.writer(buffer).writerows(rows);files[record]=buffer.getvalue().encode()
+   filename=stem+'-py3-none-any.whl'
+   with zipfile.ZipFile(wheels/filename,'w') as archive:
+    for path,data in files.items():archive.writestr(path,data)
+   lock['wheelFiles'][filename]=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
+  return lock,wheels
+
+ def test_separate_lab_wheel_and_runner_extra_are_pinned(self):
+  import tempfile
+  with tempfile.TemporaryDirectory() as directory:
+   lock,wheels=self.fixture(directory)
+   requirements=release.validate(lock,wheels)
+   self.assertTrue(any(line.startswith('cps-compute[runner]==0.1.0 --hash=sha256:') for line in requirements))
+   self.assertTrue(any(line.startswith('cps-compute-jupyterlab==0.1.0 ') for line in requirements))
+
+ def test_rejects_old_or_duplicate_lab_owner(self):
+  import tempfile
+  for options in ({'core_assets':True},{'owner':'unrelated-addon'}):
+   with self.subTest(options=options),tempfile.TemporaryDirectory() as directory:
+    lock,wheels=self.fixture(directory,**options)
+    with self.assertRaisesRegex(ValueError,'owner|assets|prebuilt'):release.validate(lock,wheels)
+
+ def test_exact_core_addon_corelease_and_record_are_required(self):
+  import tempfile
+  for options,error in [({'addon_version':'0.1.1'},'version'),({'asset_version':'0.1.1'},'version'),({'bad_record':True},'RECORD'),({'missing_static':True},'prebuilt'),({'runner_extra':False},'runner')]:
+   with self.subTest(options=options),tempfile.TemporaryDirectory() as directory:
+    lock,wheels=self.fixture(directory,**options)
+    with self.assertRaisesRegex(ValueError,error):release.validate(lock,wheels)
+
+ def test_hub_package_and_transitive_requirement_are_forbidden(self):
+  import tempfile
+  for options in ({'hub':True},{'hub_dependency':True}):
+   with self.subTest(options=options),tempfile.TemporaryDirectory() as directory:
+    lock,wheels=self.fixture(directory,**options)
+    with self.assertRaisesRegex(ValueError,'Hub'):release.validate(lock,wheels)
+
+ def test_batch_runtime_requires_runner_wheels(self):
+  import tempfile
+  with tempfile.TemporaryDirectory() as directory:
+   lock,wheels=self.fixture(directory)
+   del lock['wheelFiles']['papermill-2.6.0-py3-none-any.whl']
+   with self.assertRaisesRegex(ValueError,'runner'):release.validate(lock,wheels)
