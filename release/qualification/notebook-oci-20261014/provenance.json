@@ -1,0 +1,205 @@
+{
+  "scope": "Offline compute overlays on twelve existing immutable local notebook variants. Legacy Dockerfiles were not rebuilt.",
+  "recipe_source_revision": "4f4ce4c5d48055e9eb62a980fa3cc4741d16d755",
+  "compute_source_revision": "ce423324c02ad890f9c9ac321c7a3e5a873d77d2",
+  "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+  "canonical_unqualified_baseline_policy_hash": "sha256:051cd754210af2830d67968eea898f674a55ff66f5c88b3db95dff205f04e33d",
+  "live_policy_snapshot_sha256": "55fabf85108e9e972f1777f6b492d543f47dacd1bada9d3ea920949d9f3ba63a",
+  "live_policy_configmap_uid": "f40a6697-b39a-4fca-bb27-88704f1494bf",
+  "live_policy_derivation": "Operator-qualified live derivative supplied by the supervisor; distinct from the canonical unqualified catalog.",
+  "common_requirements_sha256": "a7e6903207b2c25bc5d0e52f10ffecc4b4b4ddcac36c846ffe6da10b5e09cbf3",
+  "base_source_provenance": {
+    "standard-cpu": {
+      "config_id": "46cd2a71c8e692cc42a9a109746458901790c328d05dedce62b687bd16d1fa23",
+      "manifest_digest": "sha256:1fab06639346f69e96cda6c8f551d761cc51c47de85cdc0ec42ef31bf2ef2c7f",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "base-cpu": {
+      "config_id": "3c82c82bf353b41a92e09f443a6c241d236f09e856ae8c5e8776be222e1c0ac8",
+      "manifest_digest": "sha256:b41b7eda29617b5b84e9d93e652843d38a8c1783793820a9cd3b355a342dd138",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "base-gpu": {
+      "config_id": "64007d0a27873c5cf99833c14f4c57bc2b3f6cbc80b05b98c651bf7b7885e5d5",
+      "manifest_digest": "sha256:850922582a00c706e6d10563534c4136255ec984b89e7c720bb708de9dccbaf1",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "mujoco-base-gpu": {
+      "config_id": "c3a7f01b3ba8b0201579bf331be9916d45e84884e932ad902f0bf24da8bb513a",
+      "manifest_digest": "sha256:ff971c980d1d0daf15852f6ae7b91dc70e2496eed9064e12715efb54c1591471",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "pytorch-runtime-base": {
+      "config_id": "d3e60fb58bbe054c34c4c05fce170ae9d20229f343250e20e00d26e5ebd2725f",
+      "manifest_digest": "sha256:3f7bd37f2381181360ac28b7c874724936a16fdba842dc8d05e8a2f5a5bb91fc",
+      "notebook_source_label": "334defae673d9959c3ad1daf3342e5e316cc5bf8",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "pytorch-code": {
+      "config_id": "5a0946d9aa1b404cd1dd64a05a241af6f02271d999bf2df591ed3684f46fc2e6",
+      "manifest_digest": "sha256:2592ec2730accd410d40097033fe7ffe01a6154ba208e0fc109f8caf35d819fb",
+      "notebook_source_label": "25c4061d840daa6029d94c9f34bbd2479cc8566f",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "tf-code": {
+      "config_id": "e8eaf0059cdc115a7d6f296189b7ce51aba3fbc882284d3e86a4ddfb4b517b8b",
+      "manifest_digest": "sha256:a132a50fd64d4b3e8a57684fcf01b7fdac5cbc6cd3879740d8332700fe0299ed",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": false
+    },
+    "desktop-xpra-base": {
+      "config_id": "af973e1ab18022b3717e9cfd237cf0760be51ed8b2b1d33a606cd1fb47913940",
+      "manifest_digest": "sha256:1f460b80c47cd3f7924fb0d4428a9e16b994332c96cedacf6423e718d77e823e",
+      "notebook_source_label": "334defae673d9959c3ad1daf3342e5e316cc5bf8",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "desktop-ros2": {
+      "config_id": "61f493b03cd5adde8e6c05e9be6eb1d35e29c109f698ae7cb963643b089d8d09",
+      "manifest_digest": "sha256:dde7a9d4464701dfb5ee4b8c9bef6cc7130151f5e0cb80a3212830d0568cd339",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "desktop-ros2-xpra": {
+      "config_id": "459d16995481f8cc5c655bcac5b3bec957b2026032b9a75e780f680b56c25558",
+      "manifest_digest": "sha256:dab64605a78b6781db70a72904e75f5e61acc6a9260dedb1f3e9eff4ac77137a",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "mujoco-xpra": {
+      "config_id": "bc28d0b5be1fdff39e2c64b36eda75ea47f0aa8ef21fcc6e60b0b6cd0150c3b0",
+      "manifest_digest": "sha256:e9f098592294b91602e53496bee74b8e80d11840904c38692e755fa23cdf0bb7",
+      "notebook_source_label": "7e8a42b51e7db43072fd67e4908d3728b16b07fa",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": true
+    },
+    "comfyui": {
+      "config_id": "5017e250c691fd1825d5cb43eddd4e9b96283d821edfb9fea28a3ddd97469268",
+      "manifest_digest": "sha256:198a1e78a82428929f8a1379ad0abaf648c09c915945ce4bfae030f383a386fa",
+      "notebook_source_label": "c087852acc142b5f2a5b1270241d4edb3d52d1b3",
+      "compute_source_label": "70471b9793f21a87d74ac7a673f871dfa9620101",
+      "recipe_unchanged_since_base": false
+    }
+  },
+  "base_recipe_differences": {
+    "tf-code": "Actual installed Torch2.11/TensorFlow2.21/NCCL2.28.9/notebook7.5.6 match the newer source recipe despite inherited source label.",
+    "comfyui": "Overlay installs the reviewed packaged launcher1.0.1, matching current source; its complete dependency closure uses exact base-installed versions."
+  },
+  "verification": {
+    "consumer_unittests": {
+      "passed": 32,
+      "skipped": 0
+    },
+    "structural_checks": "passed",
+    "helper_source_tests": {
+      "passed": 5,
+      "skipped": 1,
+      "reason": "requires installed wheel"
+    },
+    "helper_tests_inside_comfyui_candidate": {
+      "passed": 6,
+      "skipped": 0,
+      "method": "stdlib unittest with actual installed console launcher"
+    },
+    "oci_builds_passed": 12,
+    "installed_runtime_checks_passed": 12,
+    "lab_discovery_checks_passed": 12,
+    "max_build_jobs": 2,
+    "build_cpu_quota_each": 2,
+    "build_memory_limit_each": "8g",
+    "network_during_build_and_runtime": "none",
+    "gpu_devices_passed": 0
+  },
+  "setuptools_pin_origin": {
+    "source": "https://pypi.org/pypi/setuptools/80.9.0/json",
+    "filename": "setuptools-80.9.0-py3-none-any.whl",
+    "sha256": "062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922",
+    "base_variant": "pytorch-code",
+    "base_installed_version": "80.9.0",
+    "constraint": "torch2.11.0+cu129 requires setuptools<82"
+  },
+  "comfyui_dependency_pin_origins": {
+    "jupyter-server-proxy": {
+      "version": "4.5.0",
+      "filename": "jupyter_server_proxy-4.5.0-py3-none-any.whl",
+      "sha256": "3e3376f8de62aa86623e61d84076feafcaa731b5caf6deb5f0dd5f7a6e74fd24",
+      "source": "https://pypi.org/pypi/jupyter-server-proxy/4.5.0/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "aiohttp": {
+      "version": "3.14.4",
+      "filename": "aiohttp-3.14.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "ff4b366510c733974adb7a4102c094e4a6308e6f369315a4cf14d2d0a619cf82",
+      "source": "https://pypi.org/pypi/aiohttp/3.14.4/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "aiohappyeyeballs": {
+      "version": "2.7.1",
+      "filename": "aiohappyeyeballs-2.7.1-py3-none-any.whl",
+      "sha256": "9243213661e29250eb41368e5daa826fc017156c3b8a11440826b2e3ed376472",
+      "source": "https://pypi.org/pypi/aiohappyeyeballs/2.7.1/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "aiosignal": {
+      "version": "1.4.0",
+      "filename": "aiosignal-1.4.0-py3-none-any.whl",
+      "sha256": "053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e",
+      "source": "https://pypi.org/pypi/aiosignal/1.4.0/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "frozenlist": {
+      "version": "1.8.0",
+      "filename": "frozenlist-1.8.0-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+      "sha256": "fb30f9626572a76dfe4293c7194a09fb1fe93ba94c7d4f720dfae3b646b45027",
+      "source": "https://pypi.org/pypi/frozenlist/1.8.0/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "multidict": {
+      "version": "6.9.1",
+      "filename": "multidict-6.9.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "7fd79c521f6290c69125fa2b85fa65d9e657e6a8ffaf722dc881b926bef4aa5c",
+      "source": "https://pypi.org/pypi/multidict/6.9.1/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "propcache": {
+      "version": "0.5.4",
+      "filename": "propcache-0.5.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "f85915e00dcb1cd9f2f890ead064ed40a27df06f0db65be427b29482ae357572",
+      "source": "https://pypi.org/pypi/propcache/0.5.4/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "yarl": {
+      "version": "1.25.1",
+      "filename": "yarl-1.25.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "be80550d9bfe83d9b62398a37081a90434e6df2d978ec345c3d2820de6beddab",
+      "source": "https://pypi.org/pypi/yarl/1.25.1/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    },
+    "simpervisor": {
+      "version": "1.0.0",
+      "filename": "simpervisor-1.0.0-py3-none-any.whl",
+      "sha256": "3e313318264559beea3f475ead202bc1cd58a2f1288363abb5657d306c5b8388",
+      "source": "https://pypi.org/pypi/simpervisor/1.0.0/json",
+      "origin": "Exact installed immutable ComfyUI base version"
+    }
+  },
+  "limits": [
+    "No live Hub OAuth/RTC sessions or GPU execution were qualified.",
+    "Existing legacy image metadata was audited; this run adds compute overlays.",
+    "Provenance is an unsigned local receipt, not an embedded or signed release attestation.",
+    "No OCI archives exported, SBOM scans, image publication, production tags or deployments."
+  ]
+}
