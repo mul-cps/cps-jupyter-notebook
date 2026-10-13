@@ -5,7 +5,8 @@ Target 0.1.0 is **not released or qualified**. Populate a reviewed copy of
 central policy hash, and all released wheel files/SHA256 values. The wheelhouse
 must contain lean `cps-compute[runner]` 0.1.0, the separate
 `cps-compute-jupyterlab` 0.1.0 prebuilt addon wheel, a pinned RTC
-`jupyter-collaboration` wheel, Papermill, ipykernel, and the complete compatible
+`jupyter-collaboration` wheel, Papermill, ipykernel, `hera-workflows==7.1.0`
+for ordinary Hera workflow snippets, and the complete compatible
 dependency closure. The SDK, addon and target versions must match exactly after RC normalization:
 release/tag `1.0.0-rc.1` / `v1.0.0-rc.1` corresponds to Python wheel
 `computeVersion` `1.0.0rc1` and npm addon version `1.0.0-rc.1`.
@@ -13,7 +14,9 @@ Notebook runtimes exclude `cps-compute-hub`, including transitive requirements.
 The Lab wheel alone owns `@cps/compute-jupyterlab`; old SDK wheels bundling
 assets, duplicate or unrelated asset owners, and assets whose RECORD hashes
 differ fail validation. Installed asset ownership and hashes are checked again
-inside the offline overlay, alongside co-release versions and runner imports.
+inside the offline overlay, alongside co-release versions, runner imports and
+the exact Hera version. Hera belongs to the notebook runtime closure; the lean
+SDK does not acquire it as a default dependency.
 No package download occurs inside the overlay build. The same wheelhouse and
 source tag are applied to all variants, including the narrow MuJoCo image.
 

@@ -7,11 +7,31 @@ from pathlib import Path
 import sys
 
 
+def verify_hera():
+    """Render the ordinary Hera snippet pattern offline; never submit a workflow."""
+    from hera.workflows import Container, Resources, Workflow
+
+    assert metadata.version('hera-workflows') == '7.1.0', 'Notebook runtime requires Hera7.1.0'
+    with Workflow(name='runtime-verification', entrypoint='main') as workflow:
+        template = Container(
+            name='main', image='runtime-verification:not-submitted',
+            command=['python', '-c'], args=["print('offline verification')"],
+            resources=Resources(cpu_request='1', cpu_limit='1',
+                                memory_request='1Gi', memory_limit='1Gi'),
+        )
+    assert isinstance(template, Container), 'Snippet must produce an ordinary Hera template'
+    rendered = workflow.to_dict()['spec']['templates'][0]['container']
+    assert rendered['resources']['limits'] == {'cpu': '1', 'memory': '1Gi'}, 'Hera fixed resources differ'
+    assert rendered['resources']['requests'] == {'cpu': '1', 'memory': '1Gi'}, 'Hera fixed requests differ'
+
+
 def verify():
     import cps_compute
     import ipykernel
     import jupyter_collaboration
     import papermill
+
+    verify_hera()
 
     marker = 'labextensions/@cps/compute-jupyterlab/'
     owners = []

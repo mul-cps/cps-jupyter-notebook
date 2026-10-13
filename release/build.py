@@ -162,6 +162,8 @@ def validate(lock, wheelhouse):
             raise ValueError(name + ' wheel version must match co-release target')
     if not {'papermill', 'ipykernel'} <= packages.keys():
         raise ValueError('pinned runner wheels required for batch runtime')
+    if packages.get('hera-workflows') != '7.1.0':
+        raise ValueError('Hera hera-workflows==7.1.0 wheel required for notebook snippets')
     if 'jupyter-collaboration' not in packages: raise ValueError('pinned RTC wheel required')
     return [f'{name + ("[runner]" if name == "cps-compute" else "")}=={packages[name]} ' + ' '.join('--hash=sha256:'+digest for digest in sorted(hashes[name]))
             for name in sorted(packages)]

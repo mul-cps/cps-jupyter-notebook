@@ -32,6 +32,7 @@ class ReleaseTests(unittest.TestCase):
   verification=(ROOT/'docker/verify_compute_runtime.py').read_text()
   self.assertIn('jupyter_collaboration',verification);self.assertIn('@cps/compute-jupyterlab',verification)
   self.assertIn('papermill',verification);self.assertIn('cps-compute-hub',verification)
+  self.assertIn('verify_hera()',verification)
  def test_wheels_are_hash_verified_and_include_rtc_addon(self):
   import tempfile, zipfile, hashlib
   import json
@@ -40,7 +41,7 @@ class ReleaseTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as directory:
    wheels=Path(directory)
    lock,wheels=ModularWheelClosureTests().fixture(directory)
-   self.assertEqual(len(release.validate(lock,wheels)),5)
+   self.assertEqual(len(release.validate(lock,wheels)),6)
    filename=next(iter(lock['wheelFiles']))
    (wheels/filename).write_text('changed')
    with self.assertRaisesRegex(ValueError,'checksum'):release.validate(lock,wheels)
@@ -129,7 +130,7 @@ class MultiAbiWheelhouseTests(unittest.TestCase):
    second=wheel('pyyaml','6.0.3','cp313-cp313-manylinux2014_x86_64')
    requirements=release.validate(lock,wheels)
    line=next(r for r in requirements if r.startswith('pyyaml=='))
-   self.assertEqual(len(requirements),6)
+   self.assertEqual(len(requirements),7)
    self.assertIn('--hash=sha256:'+first,line)
    self.assertIn('--hash=sha256:'+second,line)
    wheel('pyyaml','6.0.4','cp313-cp313-manylinux2014_x86_64')
@@ -152,7 +153,7 @@ class VendoredWheelMetadataTests(unittest.TestCase):
      archive.writestr(name+'/_vendor/other-9.dist-info/METADATA','Name: other\nVersion: 9\n')
     lock['wheelFiles'][filename]=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
    requirements=release.validate(lock,wheels)
-   self.assertEqual(len(requirements),6)
+   self.assertEqual(len(requirements),7)
    self.assertFalse(any(r.startswith('other==') for r in requirements))
    path=wheels/'bleach-0.1.0-py3-none-any.whl'
    with zipfile.ZipFile(path,'a') as archive:
@@ -161,12 +162,13 @@ class VendoredWheelMetadataTests(unittest.TestCase):
    with self.assertRaisesRegex(ValueError,'metadata'):release.validate(lock,wheels)
 
 class ModularWheelClosureTests(unittest.TestCase):
- def fixture(self, directory, *, core_assets=False, addon_version='0.1.0', owner='cps-compute-jupyterlab', hub=False, hub_dependency=False, bad_record=False, runner_extra=True, missing_static=False, asset_version=None, core_version='0.1.0'):
+ def fixture(self, directory, *, core_assets=False, addon_version='0.1.0', owner='cps-compute-jupyterlab', hub=False, hub_dependency=False, bad_record=False, runner_extra=True, missing_static=False, asset_version=None, core_version='0.1.0', hera_version='7.1.0'):
   import base64,csv,hashlib,io,json,zipfile
   wheels=Path(directory)
   variants=json.loads((ROOT/'release/variants.json').read_text())
   lock={'release':'0.1.0','sourceTag':'v0.1.0','computeVersion':'0.1.0','policyHash':'sha256:'+'a'*64,'variants':variants,'baseDigests':{v:'registry/base@sha256:'+'b'*64 for v in variants},'wheelFiles':{}}
   names=[('cps-compute',core_version),(owner,addon_version),('jupyter-collaboration','4.4.1'),('papermill','2.6.0'),('ipykernel','6.30.1')]
+  if hera_version is not None:names.append(('hera-workflows',hera_version))
   if hub:names.append(('cps-compute-hub','0.1.0'))
   for name,version in names:
    normalized=name.replace('-','_');stem=normalized+'-'+version
@@ -189,6 +191,13 @@ class ModularWheelClosureTests(unittest.TestCase):
    lock['wheelFiles'][filename]=hashlib.sha256((wheels/filename).read_bytes()).hexdigest()
   return lock,wheels
 
+ def test_runtime_requires_reviewed_hera_version(self):
+  import tempfile
+  for version in (None,'7.0.0','7.2.0'):
+   with self.subTest(version=version),tempfile.TemporaryDirectory() as directory:
+    lock,wheels=self.fixture(directory,hera_version=version)
+    with self.assertRaisesRegex(ValueError,'Hera.*7.1.0'):release.validate(lock,wheels)
+
  def test_separate_lab_wheel_and_runner_extra_are_pinned(self):
   import tempfile
   with tempfile.TemporaryDirectory() as directory:
@@ -196,6 +205,7 @@ class ModularWheelClosureTests(unittest.TestCase):
    requirements=release.validate(lock,wheels)
    self.assertTrue(any(line.startswith('cps-compute[runner]==0.1.0 --hash=sha256:') for line in requirements))
    self.assertTrue(any(line.startswith('cps-compute-jupyterlab==0.1.0 ') for line in requirements))
+   self.assertTrue(any(line.startswith('hera-workflows==7.1.0 --hash=sha256:') for line in requirements))
 
  def test_rejects_old_or_duplicate_lab_owner(self):
   import tempfile
