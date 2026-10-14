@@ -25,6 +25,24 @@ def verify_hera():
     assert rendered['resources']['requests'] == {'cpu': '1', 'memory': '1Gi'}, 'Hera fixed requests differ'
 
 
+def verify_browser_hook():
+    """Check installed operator hook custody without an identity/network request."""
+    import cps_compute_jupyterlab
+    from types import SimpleNamespace
+    from unittest.mock import patch
+    import os
+    assert cps_compute_jupyterlab._jupyter_server_extension_points() == [{'module': 'cps_compute_jupyterlab'}], 'Packaged server discovery required'
+    config = Path(sys.prefix) / 'etc/jupyter/jupyter_server_config.d/cps_compute_jupyterlab.json'
+    assert json.loads(config.read_text()) == {'ServerApp': {'jpserver_extensions': {'cps_compute_jupyterlab': True}}}, 'Packaged auto-enable configuration required'
+    for source in ['cps', 'cit']:
+        path = '/teaching/services/' + source + '-admin/api/compute/v1/'
+        settings = {'page_config_hook': lambda handler, page: {**page, 'other': 'preserved'}}
+        with patch.dict(os.environ, {'CPS_COMPUTE_BROWSER_GATEWAY_PATH': path}, clear=True):
+            cps_compute_jupyterlab._load_jupyter_server_extension(SimpleNamespace(web_app=SimpleNamespace(settings=settings)))
+        value = settings['page_config_hook'](None, {'cpsComputeGatewayUrl': 'https://untrusted.invalid/'})
+        assert value == {'cpsComputeGatewayUrl': path, 'other': 'preserved'}, 'Installed trusted routing hook differs'
+
+
 def verify():
     import cps_compute
     import ipykernel
@@ -32,6 +50,7 @@ def verify():
     import papermill
 
     verify_hera()
+    verify_browser_hook()
 
     marker = 'labextensions/@cps/compute-jupyterlab/'
     owners = []

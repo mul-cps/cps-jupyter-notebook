@@ -100,3 +100,21 @@ The overlay first uninstalls both compute distributions, then forces reinstallat
 from hashed wheels, including when a base already has the same package version.
 This prevents an old bundled SDK uninstall from deleting assets after the new
 Lab distribution installs them. Qualification must compare installed SDK modules and addon asset hashes, not versions alone.
+
+Notebook consumers also require the Lab distribution's packaged Jupyter Server
+discovery and auto-enable configuration. `docker/verify_compute_runtime.py`
+checks the installed hook, root-relative CPS/CIT paths and preservation of an
+existing PageConfig callback. Hub configuration supplies the browser route;
+images contain no Hub selector derived from a username and no browser credential.
+Missing operator routing leaves the hook inert. Actual visitor authentication
+remains the corresponding Hub console's responsibility.
+
+A bounded qualification refresh may use already qualified immutable notebook
+images as bases and replace only the reviewed Core/Lab wheels with offline,
+hashed `--no-deps` installation. It must verify the original base layers,
+every other dependency version, actual Core bytes, Lab RECORD-owned assets and
+server metadata, as well as ordinary Hera, RTC and applicable application
+discovery. Real isolated Lab HTML checks exercise CPS/CIT/prefix, absent and
+malformed routing plus a user-disk override. They do not qualify human Hub OAuth,
+live kernel SDK authorization, GPU execution or deployment adoption. Preserve
+the prior image and receipt history; qualification tags are not production releases.
