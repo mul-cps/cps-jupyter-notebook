@@ -1,0 +1,42 @@
+{
+  "baseHubRevision": "7d04c0c46fb9fd8ca69bdd0359258d78fc6abd2c",
+  "browserGatewayPaths": {
+    "cit": "/services/cit-admin/api/compute/v1/",
+    "cps": "/services/cps-admin/api/compute/v1/"
+  },
+  "entryPoints": "[jupyterhub.spawners]\ncps-kubernetes = cps_compute_hub.spawner:CPSKubeSpawner\n",
+  "metadataSHA256": "cc37e1d3efc88c6b88238481f8c46f8df69131290980f97420298b28638d25d2",
+  "modules": {
+    "cps_compute_hub/__init__.py": "430a2b96dd1466bf2ea4470b26c3398e010cc0801b33457f1c3bbb05d8cbfac9",
+    "cps_compute_hub/compat.py": "0cb8dc9fb25690929418beef6332660fb210a6d140840221f1b53897956cc536",
+    "cps_compute_hub/config.py": "d09371ff1824ba9725aa0953669806c294f528fbfe4eef98f8672241c46bf4d8",
+    "cps_compute_hub/http_read.py": "b7a5c0f15e7868ae2656c902953190e1e87ba77686076af2997e685dc46139a2",
+    "cps_compute_hub/hub.py": "f10a76519260c4fc3aab065a40f2a04aad5ae9d3850cd027c7734b12bfdc5456",
+    "cps_compute_hub/login_guard.py": "1b0cce2e3b2c7605123b2bee72fdddeae5c1218e661622a3c42ff1b9e5be5e3c",
+    "cps_compute_hub/native_hub.py": "9fedaeef9920cf5ceb88ac9f5dd298b090eea4e860adccee1d77c52f190a26e6",
+    "cps_compute_hub/native_hub_config.py": "83556bb6f401c6f9a23c939668062915f30df1d22b08256f281324d120c0fb6b",
+    "cps_compute_hub/neutral_accounts.py": "9784600fe25d707eb76770200ffd6468bb071d1e5ed081f3ff8b31856a1c0396",
+    "cps_compute_hub/neutral_custody.py": "a27af271a5a88d8408568db169ac037789cc6bac800b00afe07480e5ed1f7aac",
+    "cps_compute_hub/registered_cpu.py": "7eb98bc851b4a99775a66aa4d82023ad9d4d64e92c032e2d51d5f04a753c1c2b",
+    "cps_compute_hub/roles.py": "a57ee34fe56f7991373a0879ae4cca8a19abed7ac0a319a2397ac687d040df2d",
+    "cps_compute_hub/spawner.py": "e4959101fab5dedef7fb786f3ed7f454518ba3beef6a8d1ee1e7aa82aac6b785"
+  },
+  "privateReceiptSHA256": "166ce9f4ad34f3b6803346a4f5987272fe2646bbaceae34059fc59167e381f97",
+  "schemaVersion": 1,
+  "scope": "Separate Python Hub plugin wheel; actual Hub5.5.2/KubeSpawner7.1 CPU source tests and exact wheel/source code closure; no immutable Hub image or live deployment claim",
+  "sourceRevision": "3851142cc94cf430be9ada07cb1b1bf21c8b3d1a",
+  "tests": {
+    "existingFixtureSkips": 3,
+    "focusedGetEnvInstallersPassed": 15,
+    "hubCorePassed": 1853
+  },
+  "testsEvidence": {
+    "hub-core-suite.log": "9866515a1114e90ec15c78a97b3400c43366d0daa86d2be5a0a4ce8ce948812c",
+    "hub-green.log": "960782769cdc32174d78ce5bbe7f11f28564c321e64490cea560c398f32609a2"
+  },
+  "trust": "Trusted typed source and actual Hub.base_url ending hub/; dedicated environment emitted last, forged profile environment ignored; standard composed late server start hook; no visitor identity inference or browser credential injection",
+  "wheel": {
+    "filename": "cps_compute_hub-0.1.0-py3-none-any.whl",
+    "sha256": "c8a2248368d5fc4e73399a447fa25e7a84af866eacfafc0e22f571adeba04c07"
+  }
+}

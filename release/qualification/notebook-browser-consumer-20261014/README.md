@@ -1,0 +1,15 @@
+# Trusted notebook browser consumer qualification
+
+Status: qualified CPU-only OCI candidates; not adopted by the live Hubs.
+
+The Hub plugin derives the browser API path from its trusted CPS/CIT source and actual Hub prefix. The packaged Jupyter Server extension composes the existing PageConfig hook during load and standard start, preserving late Hub visitor fields and overriding only `cpsComputeGatewayUrl`. Browser requests use the same-origin admin API and the visitor's existing Hub session. The hook does not inject credentials or infer a visitor from the kernel owner.
+
+Core hooks `3851142cc94cf430be9ada07cb1b1bf21c8b3d1a` retain Hub `7d04c0c` and Lab `3e352ea` lineage. Notebook verifier `f96af54157d71f9657b8d0ffaebbc219d4e01949` consumes the approved Gateway-compatible Core wheel `e3788ee0…` and Lab wheel `f10b42b8…`. All 12 already-qualified ce423 OCI bases retain every prior layer and dependency version; only Core and Lab packages change in one offline overlay. Retained OCI recipe labels are the exact unique abbreviated notebook commit `f96af54`; this receipt records its full Git identity.
+
+Validation: 1,853 Hub/Core tests passed with three existing fixture skips, 15 focused get-env/installer tests, nine Lab Python tests, 30 Node tests and 36 notebook-consumer tests. Each derivative verifies all 43 installed Core modules, assets/RECORD ownership, discovery/enablement, Hera rendering, RTC and unchanged dependency closure (112 packages, or 122 for ComfyUI). Each also serves actual installed Lab HTML for CPS, CIT, a nested Hub prefix, missing configuration and rejected malformed configuration; all owned processes were reaped.
+
+These are isolated CPU/loopback checks. Human Hub OAuth, actual visitor authorization, live SDK calls, current-session telemetry and GPU execution are separate acceptance gates. The inherited historical policy hash identifies the base qualification and does not authorize live policy changes. Live image adoption and native GPU image-pin changes require their own reviewed handovers.
+
+The exact source/wheel/log hashes and per-variant manifest, config, base-layer and actual-HTML results are in `qualification-receipt.json`. The independently packaged Hub wheel has separate code closure in `hub-wheel-receipt.json`. Publication results are added after immutable remote manifest/config readback.
+
+All 13 candidates were published to the existing `mul-cps` repositories under source-bound qualification tags. Remote raw manifests/configs equal the tested local bytes. Each new overlay blob was retrieved and hashed, and its uncompressed OCI tar digest equals the actual image DiffID. All unchanged base descriptors and DiffIDs match the qualified bases; base blob bodies were not downloaded again. The exact immutable references and readback hashes are in `publication-receipt.json`; the Hub OCI closure is in `hub-image-receipt.json`.

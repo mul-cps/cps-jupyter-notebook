@@ -1,0 +1,1160 @@
+{
+  "invariants": {
+    "allBaseLayersRetained": true,
+    "corePythonFilesPerVariant": 43,
+    "frozenLabFrontendAssetsRetained": true,
+    "nonComputeDependencyVersionsUnchanged": {
+      "comfyui": 120,
+      "ordinaryVariants": 110
+    },
+    "oneOverlayLayerPerVariant": true,
+    "packagesCheckedPerVariant": {
+      "comfyui": 122,
+      "ordinaryVariants": 112
+    },
+    "sameUID1000": true,
+    "standardServerDiscoveryAndConfigVerified": true
+  },
+  "policy": {
+    "hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+    "scope": "Inherited historical qualification policy; no current-live-policy authority or activation"
+  },
+  "privateReceiptSHA256": "692cc4c324ce8d0ffda0734779d55437eb4fab914a36b82951f309e3767d6e97",
+  "schemaVersion": 1,
+  "scope": "CPU-only installed notebook consumer qualification; no live adoption, human Hub OAuth, visitor API authorization, live kernel SDK or GPU execution claim",
+  "source": {
+    "computeCoreRevision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+    "computeHookRevision": "3851142cc94cf430be9ada07cb1b1bf21c8b3d1a",
+    "hubLineage": "7d04c0c46fb9fd8ca69bdd0359258d78fc6abd2c",
+    "labFrontendLineage": "3e352ea257e3e94d844b0da0a022bff8e48de650",
+    "notebookBaselineRevision": "1424a20c65e2888023957285779df3f457aa21ad",
+    "notebookRevision": "f96af54157d71f9657b8d0ffaebbc219d4e01949",
+    "retainedNotebookOCILabel": "f96af54"
+  },
+  "tests": {
+    "derivatives": {
+      "actualInstalledHTMLCases": 60,
+      "attempted": 12,
+      "passed": 12
+    },
+    "hubCore": {
+      "existingFixtureSkips": 3,
+      "passed": 1853
+    },
+    "hubFocused": {
+      "passed": 15
+    },
+    "labNode": {
+      "passed": 30
+    },
+    "labPython": {
+      "passed": 9
+    },
+    "notebookConsumer": {
+      "passed": 36
+    },
+    "retainedLogs": {
+      "actual-lab-html/receipt.json": "1f4060a7c00757fb6c513033b178c100a47c980c88bb2583a3eeeac1e8430fff",
+      "derivatives/base-inventory.json": "54de8768caa67e7c980cb4f06271a5173ea6b33ff58892ed0d75d13c63790920",
+      "derivatives/context/Dockerfile": "7d12380ad411a0ddd095092bd973e5f4016e9faf56fb70027e5606471f93e6fd",
+      "derivatives/context/release-wheelhouse/requirements.txt": "e5ab531fd09996c2464de84baa77f77e41d034934a11cc71ab28ba96d00e69c1",
+      "derivatives/context/verify_compute_runtime.py": "00ec876cfa22349e9ad97dad8a8e7cd000fb85593fd9b4d07ad19a54801a7f07",
+      "derivatives/historical-inputs.json": "0b5bc04c4462732f5b211ccb73c04bbda6c8de290a8632de6c4a7dc4ae2db340",
+      "derivatives/inputs.json": "c31c267a18fc55fbe58c6093043bac44862e495d1367f89b45bcf81e699cc0ee",
+      "derivatives/installed_page_config_probe.py": "86dab560d250a5949a08e2c1929678a6bbff58bd04467f5605252d6ebdd0ae50",
+      "derivatives/matrix-results.json": "c8633f46d6bd48f69c5ed5214d1e6ac9fad949871cf4de41de0b626252deb2cd",
+      "derivatives/probe-expected.json": "d88befb9cd22794a941c7fcaa4e9e945a983a16e6ab145a4338591eb13714a7a",
+      "derivatives/qualify-derivatives.py": "0ead537ba427c592911a3694979930266aafc11374b1f51ec0d51371421aeb2f",
+      "derivatives/runner.log": "a97d9b4a1979aeb10c2957d0c43808ba6b0f3c505ee3781d5295f3ce0b581635",
+      "derivatives/runtime-probe.py": "905e3a3cab55ea8bc3d1c704ed210b8910837de25d938316679c670885b7e861",
+      "final-wheel-code-closure.json": "3b1bb5e06344c9dfceb3ff35bfb69f8dbc2a4921107a037950e5a8b9418359ac",
+      "hub-core-suite.log": "9866515a1114e90ec15c78a97b3400c43366d0daa86d2be5a0a4ce8ce948812c",
+      "hub-green.log": "960782769cdc32174d78ce5bbe7f11f28564c321e64490cea560c398f32609a2",
+      "lab-python-closed.log": "4eff62844c72d8ee802a3c014a6cb53c674a58c2c2c30aef6fe8ce1d7a09e03d",
+      "node-tests-closed.log": "361925c8cd19709bde55d3ea7788b9082f9f7f105394cdf514f60bb88c03eb9f",
+      "old-notebook-consumer-red.log": "fe3e7cc919d3b6846a196e6f057733e9ef722dc6a18d28500077a8fa61a6ed7f"
+    }
+  },
+  "variants": {
+    "base-cpu": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "1b2870520b38dcfaa0761829d026a46eca53b72cc44477efb700afae07d6d8c8",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "07d4244e2e029ce5c371a15bb65448d7acd0dd6c62bb49bb96c3f239e3429cd7",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "df73dd327bb6f225638b9879ca594cc914595beafc85e3d0af0f9897fef29a50",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "13b77bc03aaf2bd2cb8c06ac0c30ebe416959855d6ae5ca7fb50c91d02f5e66d",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "351cd8d098426b07f58d39c913e105843422d4a448ef1cdd4686d4c7deb446c8",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 65,
+      "base_reference": "localhost/cps-notebook@sha256:e353e63fecc5f4326bc928f95d1f375e2ae441a4d37de00499941bb7729f39eb",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "760687d90fdf7d834958e4f86942c88abf1360ef9ef3314db26b990f4f1a8b5a",
+      "manifest_digest": "sha256:aa396c61d5c45779edbf349afed577dcd9520d57c9a7b2ada55baf2b521e60a5",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          13
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "base-cpu",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "base-cpu"
+    },
+    "base-gpu": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "9b7b283b949888101244c72fca235872ffa0f09192e3d005ec12a5320daeb984",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "b52f056743a1a5d13d4fd86bc73c2c2a987e3cbd2cf2b3ce8d2506e97613357e",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "1388f097376c8436768ac7ff69a7e5a4e60da0e72a3022915c89e4856b5070c6",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "c9d5740a199368111eab4d64ef75914bb87a1266a24b1f68b77cbfc6c4a89af4",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "dd14133da3bcb493689ed25c92d893d21017a6604f2f8b4cc8fcc95ea7816a37",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 83,
+      "base_reference": "localhost/cps-notebook@sha256:cbaacf3d278b21d2ebfe8722b55de5dc392d774cb2e546e960d338107156222a",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "565dced029bfa07a1d449400529b86699421ca5ee286ef3c382a9b39fc73751a",
+      "manifest_digest": "sha256:f55a7ecb772ae25aef71db55d021882cd132d8ce3760637f81050f09417ebc8f",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          14
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "base-gpu",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "base-gpu"
+    },
+    "comfyui": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "eddd360684715e1cbe2f0051337f464b455f8f2130ddc0a82f9daf2e3818b7a4",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "f8e00bcb4390b05859a5c8b8a40c18e5edbddbe998a749dd4898439ef5615332",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "2924f4cd9f9d6e6ae1649a89e0e5704ad6ef255a613f052d68ba28c09a12b592",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "9cbb692ebf3da8eb6b6a365c94853de58942f4e8dad2b4b01973fe1210f2a6e2",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "be42004cb8fcb5ca890d25b280009c1de7c51394f72288cdb6ff057d3ac62c2c",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 107,
+      "base_reference": "localhost/cps-notebook@sha256:e048816ce894d7825fe058755d189c07c80b55e30e8249fd3d6810caa1598328",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "b8aab47b095ac9607d970c9ca13ddd4b3e122458df856abcbeff46c4f3633911",
+      "manifest_digest": "sha256:e0a5261e60b012ffef56c34cf8912a11d65e544af14924409b24bfb36242bae8",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {
+          "jupyter-comfyui-proxy": "1.0.1",
+          "packaged_launcher_entrypoint": "verified"
+        },
+        "closure_packages_verified": 122,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          14
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "comfyui",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "comfyui"
+    },
+    "desktop-ros2": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "b672f79cf22f690ff8309fc76bd9bee062e92afe025aa9b49977e5b7b3eb923a",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "b8636a53f2aa9705cb3c4db2cb8b13ef9adbf9fd38fd7f027ccb62144dfa4258",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "e760dafd00c1f5a235bbc913d337fb1e43321dfe025008f5d3c67f14a467e71c",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "d120d4f14c50fc4d0e620642654dcf6dc4ff2bdee55551372e4d4a543812b81f",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "e5c92f2f8e27d91dd261a6e3ace84d6d55fe9dc6b6ee09f17320312a55ce50a5",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 112,
+      "base_reference": "localhost/cps-notebook@sha256:73602bbb75d7c3a813df008b00de12cd604410c91400b36c72f9b613a65a3668",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "47aa45353845df1b89afece1130793e7dc80909aed5a8738b521823b93a29672",
+      "manifest_digest": "sha256:4b971224dc99b51b8062de073ace15044e1d7630868811abed51b36ebff84766",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          14
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "desktop-ros2",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "desktop-ros2"
+    },
+    "desktop-ros2-xpra": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "914da1c3ccfc1d2d8a6031505736fd1b3a13cb4388d45be4a04d9a7544e95291",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "3849db7b4cdcd3441165ba0c5c0962df8a1a7f3071c14116726407ba215c8252",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "434d0a344cff9ed39d65d613fb12e17a879a57200be5ce91beaa5e8a9ce8de6b",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "d97d4d41ceec62994b1237441338acee2724a2023d18d890ca373ab6d49bd02a",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "e083e3c773bbcb937221be94da216cbd3c1a270c51c9b03a42ff419c094de1b0",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 113,
+      "base_reference": "localhost/cps-notebook@sha256:8f8bf3889d7ec0e88fed1149978a08309ae385eb0b6064058256b9d77239a308",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "37565fdb06951387549570efe57cb81bff15607f13cc2b91f1775ab29e6a8f3f",
+      "manifest_digest": "sha256:fa59b61aecdb9d3b85176c0c31f1561ba69b08b1a3e8bdf6211db2d2555f6df8",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          14
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "desktop-ros2-xpra",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "desktop-ros2-xpra"
+    },
+    "desktop-xpra-base": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "1a6ed718a043b2fb1bceac982f6a319dbe3c8ab598f3657188843f9d6bdb67c1",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "72460403615f33cc4346eacd50d25e6d349342c438759c6cf620bceea43f483d",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "7740d2892885a9a3aca1a6ca0e0eb8149638e592e4eb54d17c50a13ead885fc5",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "617349556b7b0d2ea59d4a24ee87839cf0ffdeb9e919af67ac8ff04b54b9e681",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "276102dc059b943fffca0d28dab40009b0d2b42215e56aa314fde0c6d3916e95",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 55,
+      "base_reference": "localhost/cps-notebook@sha256:41ba32448947679e539cf9486379435f17ff590a26d9c717c4a37d9d10811f6f",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "95bca91d33b922035fb384589a9a228caebc671ec90998ba81893046aa678d31",
+      "manifest_digest": "sha256:c8cfd1afbd0a084abf16677675811db4207b4e368493dc61c0774a9629301d75",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          12
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "desktop-xpra-base",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "desktop-xpra-base"
+    },
+    "mujoco-base-gpu": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "f288cb53ee38a453fd780d810cb457ab5d925bebc1a48912ba7bae018f60a49f",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "44a153ac511acc7c2c1f245f01d200057f708656703f443d5dfd31d2c368559e",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "bb57466d87d67eeeddab7dd1e08f60b06a9d42683eb850eb919f04657c411168",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "360ffb3343ba27ddef6967cef08a15d6245b988a3b3f5124a3f4c8eaaf144565",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "528c68a2214af2d80f99376d4cb328f49ca1e12e90bbe58ebe5ae0b3f6179595",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 48,
+      "base_reference": "localhost/cps-notebook@sha256:52ebf739bb1fd98ae03b63680d2b8beecc03a244dab4c974fa836c75e005d3e6",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "44783332d5a812d870f10c9aef90e8a3f859c5823d6e6b89f19a1afc1034b9f4",
+      "manifest_digest": "sha256:160486a7648a9dcb159f035627710f18504a2c95c2d91e0ef78a9da77e42f839",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          12
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "mujoco-base-gpu",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "mujoco-base-gpu"
+    },
+    "mujoco-xpra": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "84c92f01667b1994febff7554563a923f6bae3a7180cd21bf997b2938c3c505f",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "022a4c5d6dc21b41ac2965d8d8629692a24604d1275da4aeeb31b03362f33fe3",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "2f1424308000d1f12673266a8544dbdd88881449bda2d005d4e995742279c86b",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "712d92227498db02c8b2ed4e1bf293f9cb3bf6af51a98acf424c2c9de300b8f5",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "b5861162f69efa15f90b228fd83532282cd4de117341222f3af574c9b3e6e3aa",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 60,
+      "base_reference": "localhost/cps-notebook@sha256:b85bd66418d24413f7912357ba254cbcd4b8dbaa7838285b94c4612229e652d5",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "7560d2cecc79af836faeeb78fc4e41fa59fbcafad80fc6ff13ecef0c9f36c407",
+      "manifest_digest": "sha256:c2ec1c82c55cc24ae78d29693bc6274b0725a0676722ad9e383aa35f760806a9",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          12
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "mujoco-xpra",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "mujoco-xpra"
+    },
+    "pytorch-code": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "7eec3b0a7a36103645637244cf903f00779f0f30c366a35c4d6f810267c396a2",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "244d145d25a51ffd5da22d3d4d6604f644e0c94df937a7b3182775d10018dc8b",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "cd1af6a901c7a3edfde14911b2b9013f2b5a40e9f642f540168e9fb019f8dab4",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "3dde4831dc0d1a4a4a167f3503347dfd922a8765295e362216d93d2b70cacc25",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "818bcd34e47087a1bde621c9ebdddde0435acc2c0e219429a93e8cbf50167689",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 83,
+      "base_reference": "localhost/cps-notebook@sha256:78592c972d57cc85e893d4116cc45694f099860b08ec04d892c0a830c0b42978",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "27b65ecf4109a566eb8724554668cebee53baeae98d5a101d84788f6e7f74c16",
+      "manifest_digest": "sha256:2171d6d4355fb433769575fe4033d8bd92335ec4b2b66d5fcf6def5b34587699",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          14
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "pytorch-code",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "pytorch-code"
+    },
+    "pytorch-runtime-base": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "8d647d0b55e60c285bc7cd52805adbd03c9eb6f8928be0da5774a36ddb6d8129",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "8bc5c567d5aa5c328a2bda8b0439a5de74063e71551ea15fc9a8b190b3d1e533",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "abe801ef3423ecba2d3da6f7803c961d94e8945b987044d6e702a9c97587bb11",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "dc464fc81738139c10bc964704b447827e296100acd9703163197eeea2e5298b",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "fea67df2a33f0a3bd820b47778a48224ffe4323117f16d70ca4466a761d60d8c",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 47,
+      "base_reference": "localhost/cps-notebook@sha256:0fce7cab26c44c9bf3592710f179bcb19fbf4820480c07c8798c1964dd575b83",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "2f46ff824bbed8898d6dcb495b35784b6443bca3bf1b7098a98032406eafc8b6",
+      "manifest_digest": "sha256:aab190e76211b90ec98166eb2c02fc487464a82e9dfd5ef8b09a6142520a0ecd",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          12
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "pytorch-runtime-base",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "pytorch-runtime-base"
+    },
+    "standard-cpu": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "3ec95f0bc577b6c832a9f873f2c22555ae02852943f7f8bc4745900518368175",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "a980e92bbea08161f2fc9ceb9b5bf79c7d4c1f4cfe250242692fe7229817a937",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "94683efe1d69918b0635b746720d1edd4518ca7bd5d3ccf132ac1e57b4070cd4",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "4c6d67ba7de269effc178f47b5b3a4abba66428babf7b3ca8901001c648330bd",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "1dd8f536b9810a57b20f3ef536803a865b637db34320b7d872a278314a47d4c3",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 65,
+      "base_reference": "localhost/cps-notebook@sha256:83e884dae3a2ed911084d6f8aaa848ec72f41800610de66fa520b92223169a65",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "8b224b51e586d401239a3bbdb6ef18bb9b71c2dda21f501cf2b3b7f39bf84f77",
+      "manifest_digest": "sha256:86c4fd58afe7a4e18b850da9f007d3c9e8cc8c058d85c0b8fee667ed72779d59",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {},
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          13
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "standard-cpu",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "standard-cpu"
+    },
+    "tf-code": {
+      "actual_lab_html": {
+        "cases": [
+          {
+            "actual_lab_html": true,
+            "case": "cps",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "4e4bd4c93d875966b02cb89aaee1ec7fb0c857a904d9bd3011b51e718f322aef",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cps-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "cit",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "c012dc26df75696d8d9d3747bffcb395455dc3f64eeb90e2859ac6f64c7b29b4",
+            "owned_server_reaped": true,
+            "trusted_path": "/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "nested",
+            "disk_override_preserved_other_fields": true,
+            "html_sha256": "8d6882d845ec2fd5af25a73db27be08be640ff9ec11c3b4da537b3a6e40826f2",
+            "owned_server_reaped": true,
+            "trusted_path": "/teaching/nested/services/cit-admin/api/compute/v1/"
+          },
+          {
+            "actual_lab_html": true,
+            "case": "missing",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "82181cae6d96941d7dd9fc03accc2b1c3c8dab21430456200456b8e92c0b023a",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          },
+          {
+            "actual_lab_html": true,
+            "case": "malformed",
+            "disk_override_preserved_other_fields": null,
+            "html_sha256": "4a49fc0436a8da1f201882e46da1a5b3d816bfdad227a62b6aec8ced721e2d6d",
+            "owned_server_reaped": true,
+            "trusted_path": null
+          }
+        ],
+        "installed_prefix": "/opt/conda",
+        "jupyter_server": "2.21.1",
+        "jupyterlab": "4.5.7",
+        "jupyterlab_server": "2.28.1",
+        "scope": "Real installed JupyterLab HTML plus standard discovery/enablement, isolated loopback only; no human Hub OAuth or visitor API authorization claim",
+        "version": 1
+      },
+      "base_layers_preserved": 86,
+      "base_reference": "localhost/cps-notebook@sha256:c09b0ca514dca9aff10ea3bb941f44e5cef69cf9c868707d62712a30eca22670",
+      "compute_source_revision": "8ecb7e38c26d4be5b5e753e62ae4d0957aa84071",
+      "config_id": "26b3b3ee7c2a52e56ea67c6f90ff0b6f6291bed14baff758b6ca64ff4f0c7351",
+      "manifest_digest": "sha256:1de5f7d562a0a28af05628a9d126798e52dcad477f739841e8ea88c6db874ecc",
+      "manifest_type": "application/vnd.oci.image.manifest.v1+json",
+      "overlay_layers": 1,
+      "policy_hash": "sha256:d48f6553ed036c2e7adcc97417623fe0308be93ad13b20f246047ada118511b0",
+      "runtime": {
+        "applicable_apps": {
+          "notebook": "7.5.6",
+          "nvidia-nccl-cu12": "2.28.9",
+          "tensorflow": "2.21.0",
+          "torch": "2.11.0+cu129",
+          "torchaudio": "2.11.0+cu129",
+          "torchvision": "0.26.0+cu129"
+        },
+        "closure_packages_verified": 112,
+        "core_python_files_verified": 43,
+        "lab_assets_verified": 6,
+        "prefix": "/opt/conda",
+        "python": [
+          3,
+          13,
+          14
+        ],
+        "sdk_location": "/opt/conda/lib/python3.13/site-packages/cps_compute/__init__.py",
+        "uid": 1000,
+        "variant": "tf-code",
+        "versions": {
+          "cps-compute": "0.1.0",
+          "cps-compute-jupyterlab": "0.1.0",
+          "hera-workflows": "7.1.0",
+          "ipykernel": "7.4.0",
+          "jupyter-collaboration": "4.4.2",
+          "jupyterlab": "4.5.7",
+          "papermill": "2.7.0",
+          "setuptools": "80.9.0"
+        }
+      },
+      "source_revision": "f96af54",
+      "status": "build-and-installed-runtime-passed",
+      "variant": "tf-code"
+    }
+  },
+  "wheels": {
+    "core": {
+      "filename": "cps_compute-0.1.0-py3-none-any.whl",
+      "sha256": "e3788ee0f995f9dd35d497d76d824a26baf3f353a7539cf44aa87ca02fb948d0"
+    },
+    "hub": {
+      "filename": "cps_compute_hub-0.1.0-py3-none-any.whl",
+      "sha256": "c8a2248368d5fc4e73399a447fa25e7a84af866eacfafc0e22f571adeba04c07"
+    },
+    "lab": {
+      "filename": "cps_compute_jupyterlab-0.1.0-py3-none-any.whl",
+      "sha256": "f10b42b86bf5c0787c60b6e25092138f73264f530867a41e3bbd4692ddf887ea"
+    }
+  }
+}
