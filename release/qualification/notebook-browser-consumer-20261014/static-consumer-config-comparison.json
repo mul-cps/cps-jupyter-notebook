@@ -1,0 +1,37 @@
+{
+  "configFileSHA256": {
+    "nextCPU": "8b224b51e586d401239a3bbdb6ef18bb9b71c2dda21f501cf2b3b7f39bf84f77",
+    "nextHub": "55c2d065d0290d10fd4128bfb344115d6966d68847893d8711a01c58fa93105f",
+    "previousCPU": "44a762564cbc18e94ef4500b4191354d50ee019599306733d6250ebf53336dfc",
+    "previousHub": "fe42b6f77900f7dcb159066ce531fde994c9c68eb51cad244303e90a47da86bf"
+  },
+  "note": "Old image default root becomes the qualified runtime user1000. Actual Hub securityContext, NFS ownership and notebook startup must remain captured/qualified; no securityContext changes are proposed.",
+  "previousCPU": "ghcr.io/mul-cps/cps-jupyter-notebook@sha256:ff0c30d92f8b0483623acb719a909daba8dc93ab3f1910706e65b3f15237ae35",
+  "previousCPUImageUser": "root",
+  "previousCPULayers": 56,
+  "sharedRootFSPrefixLayers": 56,
+  "source": "Static local OCI config comparisons, not a live cutover plan",
+  "storageUserEnvironmentUnchanged": {
+    "CONDA_DIR": "/opt/conda",
+    "HOME": "/home/jovyan",
+    "JUPYTER_PORT": "8888",
+    "NB_GID": "100",
+    "NB_UID": "1000",
+    "NB_USER": "jovyan"
+  },
+  "targetCPU": "ghcr.io/mul-cps/cps-jupyter-notebook@sha256:86c4fd58afe7a4e18b850da9f007d3c9e8cc8c058d85c0b8fee667ed72779d59",
+  "targetCPUImageUser": "1000",
+  "targetCPULayers": 66,
+  "unchanged": {
+    "Cmd": [
+      "start-notebook.py"
+    ],
+    "Entrypoint": [
+      "tini",
+      "-g",
+      "--",
+      "start.sh"
+    ],
+    "WorkingDir": "/home/jovyan/work"
+  }
+}

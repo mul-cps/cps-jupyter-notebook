@@ -1,0 +1,68 @@
+{
+  "artifactReceipt": {
+    "durableQualificationRevision": "c734fd8d265e424c323a2edebfc94a0075c4ec27",
+    "notebookVerifierRevision": "f96af54157d71f9657b8d0ffaebbc219d4e01949",
+    "sha256": "668ce9ea546e219249af00eb195f6359c946910b4e951b8d56e5f602ec3b5d9c",
+    "sourceRevision": "3851142cc94cf430be9ada07cb1b1bf21c8b3d1a"
+  },
+  "cpuNotebookPair": {
+    "allPrevious56RootFSLayersRetained": true,
+    "captureInputs": [
+      "CPS static PROFILE_CONFIGS cpu-default image",
+      "CIT configured cpu-default kubespawner_override image",
+      "Any additional exact ff0c CPU-default input must be independently identified and reviewed; no broad string replacement"
+    ],
+    "defaultImageUserChange": {
+      "deploymentSecurityContext": "Preserve captured exact securityContext; actual startup/NFS access separately qualified",
+      "next": "1000",
+      "previous": "root"
+    },
+    "next": "ghcr.io/mul-cps/cps-jupyter-notebook@sha256:86c4fd58afe7a4e18b850da9f007d3c9e8cc8c058d85c0b8fee667ed72779d59",
+    "previous": "ghcr.io/mul-cps/cps-jupyter-notebook@sha256:ff0c30d92f8b0483623acb719a909daba8dc93ab3f1910706e65b3f15237ae35",
+    "sameEntrypointCmdWorkingDirAndStorageUIDGIDEnv": true,
+    "scope": "Only exact operator cpu-default image inputs; no native GPU image changes",
+    "variant": "standard-cpu"
+  },
+  "hubConfigUnchangedApartFromReviewedMetadataAndCPUImageInputs": true,
+  "hubCoreAndDependenciesUnchanged": true,
+  "hubImagePair": {
+    "cit": {
+      "namespace": "cit-jhub",
+      "next": "ghcr.io/mul-cps/cps-compute@sha256:22054be40b05bec359585ae7c66dd896b84f13311f26f6f4b9aa634a4b05f169",
+      "previous": "ghcr.io/mul-cps/cps-compute@sha256:a7155bebb5dff1b70ff79edbf57a1012bb37feed082bac8212c885b46e1cb950"
+    },
+    "cps": {
+      "namespace": "jupyterhub",
+      "next": "ghcr.io/mul-cps/cps-compute@sha256:22054be40b05bec359585ae7c66dd896b84f13311f26f6f4b9aa634a4b05f169",
+      "previous": "ghcr.io/mul-cps/cps-compute@sha256:a7155bebb5dff1b70ff79edbf57a1012bb37feed082bac8212c885b46e1cb950"
+    }
+  },
+  "kind": "trusted-browser-consumer-handover-preparation",
+  "liveCutoverExecuted": false,
+  "liveSnapshotCaptured": false,
+  "operatorProcedure": [
+    "Freshly capture both actual Hub Deployment UID/RV/full specs, owning Pods/imageIDs, config Secret/ConfigMap UID/RV/full bytes, source declarations/approval revision/epoch, gateway runtime and successful current delivery journal. Verify recorded previous immutable images; drift stops preparation.",
+    "Capture matching online Hub/PostgreSQL roles/config backups plus both Source SQLite backups using existing approved procedures. Require normal QA Stop/Pod/server/Shares absence and fresh native reservations/bindings/physical-cap zero evidence before rollout.",
+    "Render exact reviewed both-Hub image/publisher bootstrap changes with existing qualified_hub_package_handover helper, scoped a715-to-22054 tuple. Preserve all DB tables/custody/registry receipts, Source87, Gateway440 code, node processes, policy profiles/limits/memberships, GPU image pins and storage. Retain full original CAS preimages, exact inverse and old delivery history.",
+    "Compile only exact operator cpu-default ff0c-to-86c4 image-literal transitions from captured configuration; preserve all other configuration bytes and existing grant/identity/storage ownership. Bind CPU config changes into the same reviewed publication; never general-replace ff0c across native/other scope.",
+    "After Root review of the complete fresh packet, use existing delivery pause/image bootstrap/trust reload/role/readiness/4ACK/new seed journal phases. Gateway same-image restart is only for process Hub-image trust reload; no Source/Gateway code or node/driver changes. Every mutation uses actual UID/RV/full-preimage equality.",
+    "Read actual both new Hub Pods/imageIDs/Ready, runtime installed package closure, source-neutral owner/custody roles, same epoch and all four fresh process ACKs. Keep old seed/PVC/journal history. Do not count expired/inferred ACKs or deployment Ready alone.",
+    "Only after approved handover, run an owned normal CPU workspace through current SourceStart/HubPod/Stop. Check actual notebook imageID/module/auto-enable PageConfig route and NFS paths; test browser visitor identity via existing Hub OAuth separately from shared kernel principal. Require actual response authorization plus clean normal Stop/reservation/storage preservation; no native GPU start."
+  ],
+  "remainingLiveAcceptance": [
+    "Fresh CAS/backup/current approval snapshot",
+    "Normal CPU workspace startup and storage preservation with new consumer",
+    "Actual human Hub OAuth and per-visitor same-origin API identity/authorization",
+    "Live browser polling and SDK/workflow/notebook artifact paths"
+  ],
+  "rollback": "Guarded existing handover inverse only on exact current expected state; preserve successful DDL/custody/role history. No automatic DB restore, forced reservation release or replay on conflict.",
+  "schemaVersion": 1,
+  "sourceAndGatewayCodeUnchanged": true,
+  "staticComparisonSHA256": "0de378b83dbdc4d3289daca0a17c9c4b64ebc271e683fc13d2581ec27eaf3f8c",
+  "status": "prepared-not-authorized-for-execution",
+  "trustedPaths": {
+    "cit": "/services/cit-admin/api/compute/v1/",
+    "cps": "/services/cps-admin/api/compute/v1/",
+    "prefix": "Derive from actual typed Hub.source and actual Hub.base_url ending hub/; preserve non-root prefix"
+  }
+}
