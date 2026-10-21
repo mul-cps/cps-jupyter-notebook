@@ -110,14 +110,45 @@ def inventory(root):
     return files
 
 
+def conda_egg_owners(site, prefix, eggs, namespace):
+    """Legacy Conda installs use conda-meta file lists instead of wheel RECORDs."""
+    root = prefix / 'conda-meta'
+    with directory(root) as fd, os.scandir(fd) as entries:
+        names = sorted(entry.name for entry in entries if entry.name.endswith('.json'))
+    require(0 < len(names) <= 10000, 'Bounded installed Conda ownership records required')
+    owners = {name: [] for name in eggs}
+    for name in names:
+        raw, _ = read(root / name)
+        record = json.loads(raw)
+        require(isinstance(record, dict) and isinstance(record.get('files'), list),
+                'Installed Conda file list required')
+        paths = record['files']
+        require(all(isinstance(p, str) and p and not p.startswith('/') and '\\' not in p
+                    and not any(ord(c) < 32 for c in p) and posixpath.normpath(p) == p
+                    and p != '..' and not p.startswith('../') for p in paths)
+                and len(paths) == len(set(paths)), 'Canonical Conda ownership paths required')
+        absolute = {prefix / p for p in paths}
+        require(not any(p.is_relative_to(namespace) for p in absolute),
+                'Conda distribution owns the Lab namespace')
+        for egg in eggs:
+            package = site / egg
+            if package / 'PKG-INFO' in absolute:
+                require(inventory(package) <= absolute, 'Unrecorded legacy Conda metadata file')
+                owners[egg].append(name)
+    require(all(len(records) == 1 for records in owners.values()),
+            'Each legacy egg requires one actual Conda ownership record')
+
+
 def other_owners(site, prefix, sdk, namespace):
     with directory(site) as fd, os.scandir(fd) as entries:
         names = sorted(entry.name for entry in entries
                        if entry.name.endswith(('.dist-info', '.egg-info')))
+    eggs = [name for name in names if name.endswith('.egg-info')]
+    if eggs or os.path.lexists(prefix / 'conda-meta'):
+        conda_egg_owners(site, prefix, eggs, namespace)
     for name in names:
-        if name == sdk.name:
+        if name == sdk.name or name.endswith('.egg-info'):
             continue
-        require(name.endswith('.dist-info'), 'Unsupported legacy distribution ownership metadata')
         raw, _ = read(site / name / 'RECORD')
         require(not any(path.is_relative_to(namespace) for _, _, path in rows(raw, site, prefix)),
                 'Another distribution owns the Lab namespace')

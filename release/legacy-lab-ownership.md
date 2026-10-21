@@ -87,3 +87,10 @@ Focused tests use temporary local fixture files only:
 PYTHONDONTWRITEBYTECODE=1 python -m unittest discover \
   -s tests -p test_legacy_lab_ownership.py -v
 ```
+
+Conda-based legacy images can contain `.egg-info` distributions without wheel
+RECORDs. The helper requires each such metadata directory to have exactly one
+installed `conda-meta/*.json` ownership manifest, checks that manifest covers all
+actual metadata files, and rejects any Conda ownership of the retiring Lab
+namespace. It does not infer installed ownership from `SOURCES.txt` or change
+Conda metadata. Invalid, aliased or symlinked manifests stop the build.

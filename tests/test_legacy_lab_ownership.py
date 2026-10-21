@@ -3,6 +3,7 @@ import base64
 import csv
 import hashlib
 import io
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -149,6 +150,48 @@ class LegacyLabOwnershipTests(unittest.TestCase):
         other = self.site / 'other-1.0.dist-info'
         other.mkdir()
         (other / 'RECORD').write_bytes(row(self.asset_record, self.asset.read_bytes()))
+        self.assert_denied()
+
+    def conda_egg(self, extra=()):
+        egg = self.site / 'zstandard-0.25.0-py3.13.egg-info'
+        egg.mkdir()
+        (egg / 'PKG-INFO').write_bytes(b'Name: zstandard\nVersion: 0.25.0\n')
+        meta = self.prefix / 'conda-meta'
+        meta.mkdir()
+        record = meta / 'zstandard-0.25.0-build.json'
+        record.write_text(json.dumps({'files': [str((egg / 'PKG-INFO').relative_to(self.prefix)), *extra]}))
+        return egg, record
+
+    def test_conda_owned_legacy_egg_does_not_block_transfer(self):
+        egg, record = self.conda_egg()
+        original = (egg / 'PKG-INFO').read_bytes(), record.read_bytes()
+        self.assertTrue(self.run_transfer()['changed'])
+        self.assertEqual(original, ((egg / 'PKG-INFO').read_bytes(), record.read_bytes()))
+
+    def test_unowned_legacy_egg_denies(self):
+        egg, record = self.conda_egg()
+        record.write_text(json.dumps({'files': []}))
+        self.assert_denied()
+
+    def test_conda_namespace_ownership_denies(self):
+        self.conda_egg([str(self.asset.relative_to(self.prefix))])
+        self.assert_denied()
+
+    def test_conda_namespace_ownership_without_egg_info_denies(self):
+        meta = self.prefix / 'conda-meta'
+        meta.mkdir()
+        (meta / 'legacy-lab.json').write_text(json.dumps({'files': [str(self.asset.relative_to(self.prefix))]}))
+        self.assert_denied()
+
+    def test_conda_path_alias_denies(self):
+        self.conda_egg(['share/../share/unrelated'])
+        self.assert_denied()
+
+    def test_conda_symlink_metadata_denies(self):
+        egg, record = self.conda_egg()
+        target = record.with_suffix('.saved')
+        record.rename(target)
+        record.symlink_to(target)
         self.assert_denied()
 
     def test_unknown_namespace_file_denies(self):
