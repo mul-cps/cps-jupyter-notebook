@@ -42,8 +42,10 @@ approved digest. Its isolated build context contains only the generated wheel
 and `release/qualify_nbi_lazy_client.py` (copied to the context root). It installs
 offline without changing dependencies, runs `pip check` and the behavior checks,
 and therefore rejects a base whose existing dependencies cannot support the patch.
-This candidate recipe is prepared; no candidate image or live promotion is
-claimed by the local qualification report.
+The local package report does not qualify live promotion. The separately
+[qualified candidate image](nbi-startup-image-qualification.json) retains the exact
+registry digest, build-container checks and preservation receipts. Live Hub timing
+and policy promotion remain separate.
 
 The first `cps.1` candidate was rejected by image `pip check`: the approved base
 uses FastMCP 3.2.4, which is compatible with the imported APIs. Revision `cps.2`

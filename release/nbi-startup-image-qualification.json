@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-23",
+  "status": "candidate-image-qualified-not-deployed",
+  "sourceRevision": "9ea3accc594f4a3d1b29798997fb8879dc433c80",
+  "baseImage": "ghcr.io/mul-cps/cps-jupyter-notebook@sha256:fb9872bf71bfee402807c4f0e9adc92c49740ec30fa4a6a4261fa2ae18d32a45",
+  "image": "ghcr.io/mul-cps/cps-jupyter-notebook@sha256:3eabf4238cdc1b48b5e945d62a5bf8bd22761891cbba91ba2aa2c0e54c776b56",
+  "tag": "qualification-nbi-lazy-9ea3acc-20261023",
+  "patchedVersion": "4.6.0+cps.2",
+  "wheelSha256": "bef15b74370cfd7ddc55fc9034d105e6c21e4b6bfc4e39d7b7a6edc638a0b71e",
+  "checks": {
+    "imagePipCheck": "passed",
+    "imageControlledSdkBehaviorTests": 3,
+    "exactRegistryManifestMatchesTestedOciExport": true,
+    "unchangedApprovedBaseLayers": 86,
+    "unchangedRuntimeConfig": true,
+    "unchangedUncompressedBaseLayerPrefix": true,
+    "originalInstalledNbiPayloadsMatchPinnedUpstream": 79,
+    "additionalLayers": 2,
+    "additionalNonDirectoryWriteEntries": 116,
+    "unexpectedWritePaths": [],
+    "nonNbiDependencyFilesChanged": false
+  },
+  "scope": "One approved shared-GPU notebook variant; optional Claude connection behavior only",
+  "excluded": [
+    "Live Hub startup timing",
+    "Actual Claude service authentication",
+    "Other notebook variants",
+    "Policy/image promotion",
+    "Broader GPU hardware or production qualification"
+  ],
+  "cleanup": {
+    "readOnlyImageMountRemoved": true,
+    "temporaryBuilderStopped": true,
+    "sshForwardClosed": true,
+    "redundantOciExportRemovedAfterManifestVerification": true
+  }
+}
