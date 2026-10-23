@@ -1,6 +1,18 @@
 {
   "addedEntries": 10,
   "artifacts": {
+    "added-layer-0.tar.gz": {
+      "bytes": 16366882,
+      "sha256": "881fc2ef058f45c8ca76612326fdfe46c8878262f0004655fc23dd2365236fac"
+    },
+    "added-layer-1.tar.gz": {
+      "bytes": 16836618,
+      "sha256": "8bf879f4b1002b01e9108374853f25cf89b989924f16cbde3196add62b8e8d5e"
+    },
+    "added-layer-entries.json": {
+      "bytes": 52463,
+      "sha256": "98c2c406e033b22e2a570c5ef1ca3ed313dc0f18f6975b7ddfdd666efb4deb6c"
+    },
     "base-mount-evidence.json": {
       "bytes": 1745,
       "sha256": "bda8c24eb01a654b9bc1fb49720a4c367619001d68ee137409a275ba1c20e131"
@@ -32,6 +44,10 @@
     "filesystem-delta.json": {
       "bytes": 62112,
       "sha256": "0b964fb3b4baf20599067556af614a0d8dc101563e0168918c9ff05819c68cbe"
+    },
+    "layer-replay-verification.json": {
+      "bytes": 354,
+      "sha256": "f94057be282c66bc05fc88cf561fab638e3c7456cce2539196bab96201ff2a1b"
     },
     "record-verification.json": {
       "bytes": 383,
@@ -69,9 +85,20 @@
       "unhashed_bytecode_files": 28
     }
   },
+  "layerReplayVerification": {
+    "complete_inventory_entries_matching": 261446,
+    "hardware_qualified": false,
+    "layer_count": 2,
+    "schema": "cps-nbi-layer-replay-evidence/v1",
+    "tar_entries": 147,
+    "unexpected_tar_types_or_pax_headers": false,
+    "whiteouts": [
+      "/opt/conda/lib/python3.13/site-packages/notebook_intelligence-4.6.0.dist-info",
+      "/tmp/cps-nbi-startup"
+    ]
+  },
   "modifiedEntries": 89,
   "notProven": [
-    "Layer whiteout and temporary-entry semantics",
     "Sealed NBI policy-preservation contract",
     "Policy promotion",
     "Live Hub startup and restart",
