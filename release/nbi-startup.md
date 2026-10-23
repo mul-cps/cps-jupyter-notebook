@@ -36,3 +36,11 @@ reconnect and disconnect. They do not qualify actual Claude authentication.
 Deployment remains subject to the normal image/policy handover. Measure a fresh
 real Hub spawn after promotion; a passing local test alone does not prove the
 15-second improvement in the deployed notebook.
+
+`docker/Dockerfile.nbi-startup` provides a candidate overlay on the currently
+approved digest. Its isolated build context contains only the generated wheel
+and `release/qualify_nbi_lazy_client.py` (copied to the context root). It installs
+offline without changing dependencies, runs `pip check` and the behavior checks,
+and therefore rejects a base whose existing dependencies cannot support the patch.
+This candidate recipe is prepared; no candidate image or live promotion is
+claimed by the local qualification report.
