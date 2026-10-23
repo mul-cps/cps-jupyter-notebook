@@ -1,0 +1,98 @@
+{
+  "addedEntries": 10,
+  "artifacts": {
+    "base-mount-evidence.json": {
+      "bytes": 1745,
+      "sha256": "bda8c24eb01a654b9bc1fb49720a4c367619001d68ee137409a275ba1c20e131"
+    },
+    "base-nbi-payloads.json.gz": {
+      "bytes": 11813886,
+      "sha256": "b1909ee3f6521fe4962ca530d138e0fbc63e702bc4ae5baf7cfdd61e26322b78"
+    },
+    "base.json.gz": {
+      "bytes": 12923175,
+      "sha256": "a9a3758eaaa5a38ccf94bb269fac782b852ec6df21a0815c91fb1683a3341696"
+    },
+    "bytecode-source-verification.json": {
+      "bytes": 6731,
+      "sha256": "67ac080bb3c57554b45875e915f39a43a718cf3769e3e3b3dc9beb74b879e9c9"
+    },
+    "candidate-mount-evidence.json": {
+      "bytes": 1769,
+      "sha256": "bd8a7001cfa0680f29ace3c079bc48914c3ff9c56efe2d313f6ab5c78a3d27ae"
+    },
+    "candidate-nbi-payloads.json.gz": {
+      "bytes": 11814663,
+      "sha256": "08b86984907e8b572840970dee43d01dbb811dc8eb0b5a425481312741aa3918"
+    },
+    "candidate.json.gz": {
+      "bytes": 12923354,
+      "sha256": "e1e386167d27e19ded55e76d791a7f75bfafa0daf7bd68f05505a76683fe7291"
+    },
+    "filesystem-delta.json": {
+      "bytes": 62112,
+      "sha256": "0b964fb3b4baf20599067556af614a0d8dc101563e0168918c9ff05819c68cbe"
+    },
+    "record-verification.json": {
+      "bytes": 383,
+      "sha256": "378e007ab4780bcab5955e285d43edb4165cdb9c58675e5cc84eaa8513f2dd6b"
+    },
+    "wheel-payload-verification.json": {
+      "bytes": 305,
+      "sha256": "53d70ec6a640962a876f9eb02e4400781c11ef17506696157421268fd8693de2"
+    }
+  },
+  "baseEntries": 261444,
+  "bytecodeSourceChecks": {
+    "base": 28,
+    "candidate": 28,
+    "method": "Python 3.13 code-object equality against compilation of inventoried source; matching magic, timestamp flags and source length; no target code executed"
+  },
+  "candidateEntries": 261446,
+  "changedEntries": 107,
+  "collectorSourceSha256": "8dbacce8219db2aaabc2daa1dbb135ff8a2c7fa4c053e3256cb2bb3a37073da1",
+  "date": "2026-10-24",
+  "hardlinksUnchanged": true,
+  "installedRecordVerification": {
+    "base": {
+      "all_captured_package_payloads_owned": true,
+      "hashes_verified": 81,
+      "record_entries": 110,
+      "record_self_unhashed": true,
+      "unhashed_bytecode_files": 28
+    },
+    "candidate": {
+      "all_captured_package_payloads_owned": true,
+      "hashes_verified": 83,
+      "record_entries": 112,
+      "record_self_unhashed": true,
+      "unhashed_bytecode_files": 28
+    }
+  },
+  "modifiedEntries": 89,
+  "notProven": [
+    "Layer whiteout and temporary-entry semantics",
+    "Sealed NBI policy-preservation contract",
+    "Policy promotion",
+    "Live Hub startup and restart",
+    "Claude authentication",
+    "Full-pool production qualification"
+  ],
+  "removedEntries": 8,
+  "schema": "cps-nbi-filesystem-comparison-evidence/v1",
+  "sourceContentChanges": [
+    "notebook_intelligence/claude.py",
+    "notebook_intelligence/_version.py"
+  ],
+  "status": "evidence-collected-not-policy-approved",
+  "wheelVerification": {
+    "base": {
+      "installed_wheel_payloads_verified": 79,
+      "wheel_sha256": "22466fe295e1c36fca2c4f4932f71f48532df44c45b2cfe154834d1312a84c82"
+    },
+    "candidate": {
+      "installed_wheel_payloads_verified": 80,
+      "wheel_sha256": "bef15b74370cfd7ddc55fc9034d105e6c21e4b6bfc4e39d7b7a6edc638a0b71e"
+    }
+  }
+}
