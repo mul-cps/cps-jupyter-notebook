@@ -33,7 +33,7 @@ def qualify(upstream):
                            info + 'METADATA', info + 'RECORD'}, changed
         meta = BytesParser().parsebytes(after[info + 'METADATA'])
         assert meta['Version'] == VERSION
-        assert {'mcp<2', 'fastmcp<3'} <= set(meta.get_all('Requires-Dist'))
+        assert {'mcp<2', 'fastmcp<4'} <= set(meta.get_all('Requires-Dist'))
         # WheelFile validates every hashed payload when it is read.
         from wheel.wheelfile import WheelFile
         with WheelFile(first) as archive:

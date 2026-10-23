@@ -11,7 +11,7 @@ import tempfile
 
 UPSTREAM_SHA256 = '22466fe295e1c36fca2c4f4932f71f48532df44c45b2cfe154834d1312a84c82'
 SOURCE_SHA256 = 'ff04462b39a89b6f0ec4fe3cad161dd3c13798f105f07c223ab0bdd1d4dfabd2'
-VERSION = '4.6.0+cps.1'
+VERSION = '4.6.0+cps.2'
 
 
 def build(wheel, output):
@@ -42,7 +42,7 @@ def build(wheel, output):
         # Upstream imports MCP 1.x APIs; FastMCP 4.x targets the newer API.
         raw = raw.replace(b'Version: 4.6.0\n', f'Version: {VERSION}\n'.encode())
         header, body = raw.split(b'\n\n', 1)
-        raw = header + b'\nRequires-Dist: mcp<2\nRequires-Dist: fastmcp<3\n\n' + body
+        raw = header + b'\nRequires-Dist: mcp<2\nRequires-Dist: fastmcp<4\n\n' + body
         metadata.write_bytes(raw)
         (info / 'cps-patch.json').write_text(json.dumps({
             'upstream_version': '4.6.0', 'upstream_sha256': UPSTREAM_SHA256,
