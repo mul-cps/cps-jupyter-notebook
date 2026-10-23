@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-23",
+  "status": "local-package-qualified-not-deployed",
+  "upstreamVersion": "4.6.0",
+  "patchedVersion": "4.6.0+cps.1",
+  "upstreamWheelSha256": "22466fe295e1c36fca2c4f4932f71f48532df44c45b2cfe154834d1312a84c82",
+  "patchedWheelSha256": "54a859045f9b52194063ff7da25f9a3f3513ad5e0584babf51dcc7661633f548",
+  "checks": {
+    "upstreamConstructorRegression": "failed-before-patch",
+    "patchedBehaviorTests": 3,
+    "freshEnvironmentBehaviorTests": 3,
+    "existingTests": 52,
+    "existingSubtests": 22,
+    "pipCheck": "passed",
+    "deterministicRebuild": "passed",
+    "recordIntegrity": "passed",
+    "otherPythonAndFrontendPayloadsUnchanged": "passed",
+    "unreviewedUpstreamRejected": "passed"
+  },
+  "freshResolvedVersions": {
+    "python": "3.13",
+    "jupyterlab": "4.5.7",
+    "mcp": "1.30.0",
+    "fastmcp": "2.14.7",
+    "claude-agent-sdk": "0.2.173"
+  },
+  "remaining": [
+    "Review and release image with full hash-pinned dependency closure",
+    "Promote through normal policy/image handover",
+    "Measure actual Hub startup after promotion",
+    "Qualify actual optional Claude authentication separately"
+  ]
+}
