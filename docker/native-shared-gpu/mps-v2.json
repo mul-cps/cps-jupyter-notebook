@@ -1,0 +1,7 @@
+{
+  "schema": "cps-compute-mps-v2/v1",
+  "enabled": true,
+  "control_binary": "/usr/bin/nvidia-cuda-mps-control",
+  "server_uid": 1000,
+  "runtime_root": "/tmp/cps-native-mps"
+}
