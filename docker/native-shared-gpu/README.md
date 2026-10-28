@@ -26,3 +26,14 @@ prebuilt Lab files when the old SDK also owned them. The final image digest,
 Pod compiler configuration, cgroup caps, GPU driver, MPS client/server and
 workspace lifecycle must be qualified together before this image is enabled.
 The control binary is provided by the NVIDIA runtime on the GPU node.
+
+The first experimental candidate was built from image-layer commit `6249240`
+and modular SDK/addon source commit `620e6488b82fb8ba49c5cc80317f75b67dabf593`.
+The SDK wheel SHA-256 was
+`3a658695819e4b78478c93b63c7eea95c7710edb00d3ae30085fe7cb2a19e503`;
+the addon wheel SHA-256 was
+`3a06c37f4232351bc73551d97a02059ddf5a1b9d023697ef5c916483c049b40d`.
+The candidate is available as
+`ghcr.io/mul-cps/cps-jupyter-notebook@sha256:d71da8e75b9dcc292bd038fc648a70dce1b7e5e5219d6daa074087c4ba12b568`.
+The build passed its default-mode launcher and addon-ownership smoke checks;
+it has not passed a GPU test or production qualification.
